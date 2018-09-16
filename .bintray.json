@@ -1,0 +1,27 @@
+{
+    "package": {
+        "name": "booklet-Clap",
+        "repo": "wip",
+        "subject": "squarebracketassociates",
+        "desc": "Command line",
+        "licenses": ["MIT"],
+        "website_url": "https://github.com/SquareBracketAssociates/Booklet-ClapCommandLine",
+        "issue_tracker_url": "https://github.com/SquareBracketAssociates/Booklet-ClapCommandLine/issues",
+        "vcs_url": "https://github.com/SquareBracketAssociates/Booklet-ClapCommandLine.git",
+        "labels": ["work-in-progress"]
+    },
+
+    "version": {
+        "name": "latest",
+        "desc": "Latest successful build"
+    },
+
+    "files": [
+        {
+            "includePattern": "_result/pdf/index.pdf",
+            "uploadPattern": "Clap-wip.pdf",
+            "matrixParams": { "override": 1 }
+        }
+    ],
+    "publish": true
+}
