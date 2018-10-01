@@ -1,4 +1,13 @@
-${inputFile:path=Chapters/Clap/Clap.pillar}$
+!!Clap By Example
 
 
+Blah
 
+
+!!Clap Explained
+
++Main specification classes>file://figures/parameters/Specifications.pdf|width=70|label=specificationClasses+
++Main activation classes>file://figures/parameters/Activations.pdf|width=70|label=activationClasses+
++Context and tree of matches>file://figures/parameters/tree.pdf|width=70|label=matchTree+
+
+!! Clap Internals
