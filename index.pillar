@@ -1,8 +1,68 @@
-!!Clap By Example
+!!Clap by Example
+
+!!!Loading Clap in a fresh image
 
 
-Blah
+!!!Trying a command from the workspace
 
+The first step in defining a command line application with Clap is to describe its interface.
+This is done by composing ''specification'' objects; for instance, the ==cmd== instance below describes a command with no parameters and simple behavior.
+
+[[[
+cmd := (ClapCommand withName: 'hello')
+  meaning: [ :args |
+    args context stdout << 'hello'; lf ].
+]]]
+
+For development convenience, arbitrary command objects can be run from the Pharo workspace, by sending them the ==#activateWith:== message, passing the array of words that would be typed to invoke it:
+
+[[[
+cmd activateWith: #('hello').
+]]]
+
+Keep in mind that Clap commands are intended to be launched from a terminal, which is why we have to pass that array of strings, but also why you will not see any output inside Pharo: the text ==hello== was sent to the standard output ''of the Pharo VM process''.
+
+@@note All examples in this booklet assume that Pharo was launched from a terminal. If you launched Pharo from your computer's desktop environment, the command will run but you will not see any output; in that case, save your image, re-launch it from a terminal, and keep an eye on the terminal window when you try commands.
+
+!!!Registering a command for use in the terminal
+
+Because a single Pharo image can host multiple independent Clap commands, Clap relies on a registration mechanism to automatically identify the set of commands available.
+
+To register a command, simply return its specification from a factory method with the ==<commandline>== pragma.
+By ''factory method'', we only mean a class-side method, with no argument, and which returns a command specification instance.
+Clap does not assume anything else: how you name the method and in which class and package you define it is entirely up to you.
+
+Let's create a class to host our ==hello== command:
+
+[[[
+Object subclass: #ClapBookletHelloExample
+  slots: {}
+  classVariables: {  }
+  package: 'Clap-BookletExamples'
+]]]
+
+And then we can store the command definition on the class-side:
+
+[[[
+ClapBookletHelloExample class >> hello
+  <commandline>
+  ^ (ClapCommand withName: 'hello')
+    meaning: [ :args |
+      args context stdout << 'hello'; lf ]
+]]]
+
+That command is testable from the workspace as before, except that we can get it from the factory method:
+
+[[[
+ClapBookletHelloExample hello activateWith: #('hello')
+]]]
+
+However, after saving the image, you should be able to run it from the terminal as well:
+
+[[[language=shell
+> $PHARO $IMAGE clap hello
+hello
+]]]
 
 !!Clap Explained
 
@@ -21,4 +81,5 @@ Before we start with the details, let's recap the general use-case:
 +Main activation classes>file://figures/parameters/Activations.pdf|width=70|label=activationClasses+
 +Context and tree of matches>file://figures/parameters/tree.pdf|width=70|label=matchTree+
 
-!! Clap Internals
+
+!!Clap Internals
