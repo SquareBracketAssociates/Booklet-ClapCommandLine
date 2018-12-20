@@ -7,20 +7,19 @@
 
 The first step in defining a command line application with Clap is to describe its interface.
 This is done by composing ''specification'' objects; for instance, the ==cmd== instance below describes a command with no parameters and simple behavior.
-
 [[[
 cmd := (ClapCommand withName: 'hello')
   meaning: [ :args |
-    args context stdout << 'hello'; lf ].
+    args context stdout << 'hello, clap'; lf ].
 ]]]
 
 For development convenience, arbitrary command objects can be run from the Pharo workspace, by sending them the ==#activateWith:== message, passing the array of words that would be typed to invoke it:
-
 [[[
 cmd activateWith: #('hello').
 ]]]
 
-Keep in mind that Clap commands are intended to be launched from a terminal, which is why we have to pass that array of strings, but also why you will not see any output inside Pharo: the text ==hello== was sent to the standard output ''of the Pharo VM process''.
+Keep in mind that Clap commands are intended to be launched from a terminal.
+This is why we have to pass that array of strings, since that's how all shell programs receive their arguments, but also why you will not see any output inside Pharo: the text gets printed on the standard output ''of the Pharo virtual machine process''.
 
 @@note ''Launch Pharo from the terminal''. Most examples assume an interactive session, but print to the standard output. Launching Pharo from desktop environment means you would run examples blind.
 
@@ -32,8 +31,7 @@ To register a command, simply return its specification from a factory method wit
 By ''factory method'', we only mean a class-side method, with no argument, and which returns a command specification instance.
 Clap does not assume anything else: how you name the method and in which class and package you define it is entirely up to you.
 
-Let's create a class to host our ==hello== command:
-
+Let's first create a class to host our ==hello== command:
 [[[
 Object subclass: #ClapBookletHelloExample
   slots: {}
@@ -41,28 +39,74 @@ Object subclass: #ClapBookletHelloExample
   package: 'Clap-BookletExamples'
 ]]]
 
-And then we can store the command definition on the class-side:
-
+And then we add a class-side method with the command definition.
+Any meaningful unary selector is fine, but do not forget the ==<commandline>== pragma or to return the freshly built ==ClapCommand== instance:
 [[[
-ClapBookletHelloExample class >> hello
+ClapBookletHelloExample class >> helloClap
   <commandline>
   ^ (ClapCommand withName: 'hello')
     meaning: [ :args |
-      args context stdout << 'hello'; lf ]
+      args context stdout << 'hello, clap'; lf ]
 ]]]
 
-That command is testable from the workspace as before, except that we can get it from the factory method:
-
+Testing from the workspace is now a bit more concise:
 [[[
-ClapBookletHelloExample hello activateWith: #('hello')
+ClapBookletHelloExample helloClap activateWith: #('hello')
 ]]]
 
-However, after saving the image, you should be able to run it from the terminal as well:
-
+However, you should now be able to run it from the command line as well.
+Save your image, and, in a new terminal window, try the following; of course, use your specific virtual machine and image in place of ==pharo clap.image==:
 [[[language=shell
 > pharo clap.image clap hello
+hello, clap
+]]]
+
+@@note In command line examples, each line starting with ==>== represents the shell's prompt followed by a command you have to enter, and the next lines show that command's output.
+
+!!!Shell tricks for convenience and deployment
+
+Repeating the virtual machine and image names each time you run a command is quite cumbersome, so we advise that you define the following alias in your shell; again, adapt to your specific virtual machine and image:
+[[[language=shell
+> alias clap='pharo clap.image clap'
+]]]
+
+The alias expands to the whole beginning of the command, making it much more concise to test Clap commands:
+[[[language=shell
+> clap hello
+hello, clap
+]]]
+
+@@note From this point on in the book, we will use the ==clap== alias as defined above. Just redefine it in each new shell session where you need it, or consult relevant documentation on how to make it persistent.
+
+While we're at it, let's discuss how one would make deploy a Clap command in a more proper way, so that it becomes as transparent to use as any other shell command.
+
+To spare typing in interactive use, shell aliases are fine.
+Our simple ==hello== command could be wrapped like so:
+[[[language=shell
+> alias hello='pharo clap.image clap hello'
+> hello
+hello, clap
+]]]
+
+However, aliases are usually not available in shell scripts.
+For structuring a shell script which relies on several Clap commands, we advise defining shell functions instead:
+[[[language=bash
+#!/bin/bash
+function clap() { pharo clap.image clap "$@"; }
+function hello() { clap hello "$@"; }
+# and later, in the script's body...
 hello
 ]]]
+
+Note the use of =="$@"== to pass all function arguments unchanged to the callee.
+Make such a script executable, place it under your ==$PATH==, ''et voilà !''
+You now have a shell program implemented in Pharo!
+
+One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
+At the time of this writing (Pharo 6.1–7), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
+Eventually, legacy command line handlers should be removed, making the ==clap== keyword superfluous, at which point it will certainly become optional.
+In the meantime, it's hidden in our convenience shell aliases or functions anyway.
+
 
 !!Clap Explained
 
