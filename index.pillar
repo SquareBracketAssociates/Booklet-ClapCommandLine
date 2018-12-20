@@ -60,22 +60,22 @@ ClapBookletHelloExample hello activateWith: #('hello')
 However, after saving the image, you should be able to run it from the terminal as well:
 
 [[[language=shell
-> $PHARO $IMAGE clap hello
+> pharo clap.image clap hello
 hello
 ]]]
 
 !!Clap Explained
 
 Clap is a framework for adding rich command-line interfaces to Pharo code; it sits at the frontier of the image, between application code and the shell environment.
-There are two main families of objects in Clap: ''specifications'' and ''activations''.
-Specifications describe the syntax and behavior of commands implemented in the image.
-An activation describes a particular command invocation and the values, order, domain-level meaning of its arguments.
+There are two main families of objects in Clap:
+- ""Specifications"" describe the syntax and behavior of commands that the image understands.
+- ""Activations"" represent command invocations and their arguments, their domain-level meaning, and which words they map to.
 
-Before we start with the details, let's recap the general use-case:
-# On the shell side, the user invokes a command, either directly in the terminal or from a shell script; for convenience, that command would usually be an alias or a small wrapper around the correct Pharo virtual machine and image;
-# On the image side, Clap receives the command with its arguments as an array of words, and creates an activation context, matching the arguments with known commands specifications;
-# A successful match has meaning defined by application code, which queries the context for domain-level meaning or raw syntax of command parameters, and for external resources like input/output streams;
-# When the application code runs to completion, Clap cleanly exits the image; alternatively, the application can tell the context to deliberately terminate with a specific exit status; if it fails to handle an exception, Clap catches it and gracefully reports the error.
+Before we start with the details, let's recap the general workflow with Clap:
+# On the shell side, the user invokes a command, either directly in the terminal or from a shell script; for convenience, that command would usually be an alias or a small wrapper around the correct Pharo virtual machine and image.
+# On the image side, Clap receives the command with its arguments as an array of words, and creates an activation context, matching the arguments with known commands specifications.
+# A successful match has meaning defined by application code, which queries the context for domain-level meaning or raw syntax of command parameters, and for external resources like input/output streams.
+# When the application code runs to completion, Clap cleanly exits the image. Alternatively, the application can tell the context to terminate early, with a deliberate exit status, or if it fails to handle an exception, Clap catches it and gracefully reports the error.
 
 +Main specification classes>file://figures/parameters/Specifications.pdf|width=70|label=specificationClasses+
 +Main activation classes>file://figures/parameters/Activations.pdf|width=70|label=activationClasses+
