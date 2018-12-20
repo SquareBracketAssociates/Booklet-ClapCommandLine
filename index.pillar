@@ -22,7 +22,7 @@ cmd activateWith: #('hello').
 
 Keep in mind that Clap commands are intended to be launched from a terminal, which is why we have to pass that array of strings, but also why you will not see any output inside Pharo: the text ==hello== was sent to the standard output ''of the Pharo VM process''.
 
-@@note All examples in this booklet assume that Pharo was launched from a terminal. If you launched Pharo from your computer's desktop environment, the command will run but you will not see any output; in that case, save your image, re-launch it from a terminal, and keep an eye on the terminal window when you try commands.
+@@note ''Launch Pharo from the terminal''. Most examples assume an interactive session, but print to the standard output. Launching Pharo from desktop environment means you would run examples blind.
 
 !!!Registering a command for use in the terminal
 
