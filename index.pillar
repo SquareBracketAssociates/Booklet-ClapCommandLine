@@ -61,26 +61,29 @@ Save your image, and, in a new terminal window, try the following; of course, us
 hello, clap
 ]]]
 
-@@note In command line examples, each line starting with ==>== represents the shell's prompt followed by a command you have to enter, and the next lines show that command's output.
+@@note In command line examples, lines starting with ==>== indicate commands typed at the shell's prompt. Other lines represent the output of those commands.
+
+One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
+At the time of this writing (Pharo 6.1–7), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
+Eventually, legacy command line handlers should be removed, making the ==clap== keyword superfluous, at which point it will certainly become optional, but in any case, it will be hidden behind the convenience shell aliases or functions that we're going to discuss next.
+
 
 !!!Shell tricks for convenience and deployment
 
-Repeating the virtual machine and image names each time you run a command is quite cumbersome, so we advise that you define the following alias in your shell; again, adapt to your specific virtual machine and image:
+Time for a little tangent.
+You should soon find that repeating the virtual machine and image names before each and every command is quite cumbersome.
+To avoid that, we advise that you define the following shell alias:
 [[[language=shell
 > alias clap='pharo clap.image clap'
 ]]]
 
-The alias expands to the whole beginning of the command, making it much more concise to test Clap commands:
+The ==clap== alias abstracts away most of the ceremony and makes it look more like an actual shell command:
 [[[language=shell
 > clap hello
 hello, clap
 ]]]
 
-@@note From this point on in the book, we will use the ==clap== alias as defined above. Just redefine it in each new shell session where you need it, or consult relevant documentation on how to make it persistent.
-
-While we're at it, let's discuss how one would make deploy a Clap command in a more proper way, so that it becomes as transparent to use as any other shell command.
-
-To spare typing in interactive use, shell aliases are fine.
+To spare even more typing, we can define additional shell aliases as needed.
 Our simple ==hello== command could be wrapped like so:
 [[[language=shell
 > alias hello='pharo clap.image clap hello'
@@ -88,8 +91,14 @@ Our simple ==hello== command could be wrapped like so:
 hello, clap
 ]]]
 
-However, aliases are usually not available in shell scripts.
-For structuring a shell script which relies on several Clap commands, we advise defining shell functions instead:
+However, while aliases make fine shortcuts, they are usually limited to interactive use, as a personal convenience feature.
+To deploy a Clap command in the system's ==$PATH==, we need a wrapper shell script:
+[[[language=bash
+#!/bin/bash
+exec pharo clap.image clap "$@"
+]]]
+
+Alternatively, shell functions provide an intermediate abstraction measure:
 [[[language=bash
 #!/bin/bash
 function clap() { pharo clap.image clap "$@"; }
@@ -102,24 +111,25 @@ Note the use of =="$@"== to pass all function arguments unchanged to the callee.
 Make such a script executable, place it under your ==$PATH==, ''et voilà !''
 You now have a shell program implemented in Pharo!
 
-One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
-At the time of this writing (Pharo 6.1–7), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
-Eventually, legacy command line handlers should be removed, making the ==clap== keyword superfluous, at which point it will certainly become optional.
-In the meantime, it's hidden in our convenience shell aliases or functions anyway.
+@@note From this point on in the book, we will use the ==clap== shortcut defined above. Either alias or script are fine, since both provide the same syntax, so pick the one you like best.
 
 
 !!Clap Explained
 
 Clap is a framework for adding rich command-line interfaces to Pharo code; it sits at the frontier of the image, between application code and the shell environment.
 There are two main families of objects in Clap:
-- ""Specifications"" describe the syntax and behavior of commands that the image understands.
-- ""Activations"" represent command invocations and their arguments, their domain-level meaning, and which words they map to.
+- ''Specifications'' describe the syntax and behavior of commands that the image understands.
+- ''Activations'' represent command invocations and their arguments, their domain-level meaning, and which words they map to.
 
 Before we start with the details, let's recap the general workflow with Clap:
 # On the shell side, the user invokes a command, either directly in the terminal or from a shell script; for convenience, that command would usually be an alias or a small wrapper around the correct Pharo virtual machine and image.
 # On the image side, Clap receives the command with its arguments as an array of words, and creates an activation context, matching the arguments with known commands specifications.
 # A successful match has meaning defined by application code, which queries the context for domain-level meaning or raw syntax of command parameters, and for external resources like input/output streams.
 # When the application code runs to completion, Clap cleanly exits the image. Alternatively, the application can tell the context to terminate early, with a deliberate exit status, or if it fails to handle an exception, Clap catches it and gracefully reports the error.
+
+!!!Specifications
+
+!!!Activations
 
 +Main specification classes>file://figures/parameters/Specifications.pdf|width=70|label=specificationClasses+
 +Main activation classes>file://figures/parameters/Activations.pdf|width=70|label=activationClasses+
