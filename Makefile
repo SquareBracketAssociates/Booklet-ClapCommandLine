@@ -2,12 +2,12 @@
 
 PDF := _result/pdf/index.pdf
 
-$PDF: index.pillar
+${PDF}: index.pillar
 	pillar build pdf
 
-open:
-	open $PDF
+open: ${PDF}
+	open ${PDF}
 
 watch:
 	watchexec --watch index.pillar \
-		"pillar build pdf && displayline -r 0 ${PDF}"
+		"make && displayline -background -revert 0 ${PDF}"
