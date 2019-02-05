@@ -114,6 +114,29 @@ You now have a shell program implemented in Pharo!
 @@note From this point on in the book, we will use the ==clap== shortcut defined above. Either alias or script are fine, since both provide the same syntax, so pick the one you like best.
 
 
+!!!Specifying parameters
+
+Now that we have a basic working command, let's focus on how to have it accept parameters.
+As far as syntax goes, Clap tries to follow the most common unix conventions, but also to remain simple and coherent.
+Keyword-like parameters that begin with dashes, such as ==-f== or ==-\-foo==, are called ''flags''; Clap also understands ''positionals'', and ''commands'' are themselves a kind of parameter.
+
+Parameters compose together with the ==#add:== message: commands can have flags, positionals, and subcommands, and a named parameter is just a flag with a child positional.
+
+!!!!Positional parameters
+
+Positionals are the simplest form of parameters; they each match a single word from the command line, in order.
+As long as it is not ambiguous with a flag, the form of the matched word does not matter for matching, so positionals accept an open-ended set of values: numbers, urls, file names, application-specific names, arbitrary strings…
+However, order between subsequent positionals is important: the user has to know which information comes first and which next, and of course they have to pay attention to the word-splitting rules of their shell and use quotes appropriately.
+
+Let's extend the ==hello== command with a positional which specifies the recipient of the greeting.
+To do this we make an instance of ==ClapPositional==, and add to its parent parameter.
+[[[
+ClapBookletHelloExample class >> helloClap
+  <commandline>
+  ^ (ClapCommand withName: 'hello')
+    add: (ClapPositional withName: 'who')
+]]]
+
 !!Clap Explained
 
 Clap is a framework for adding rich command-line interfaces to Pharo code; it sits at the frontier of the image, between application code and the shell environment.
@@ -128,6 +151,8 @@ Before we start with the details, let's recap the general workflow with Clap:
 # When the application code runs to completion, Clap cleanly exits the image. Alternatively, the application can tell the context to terminate early, with a deliberate exit status, or if it fails to handle an exception, Clap catches it and gracefully reports the error.
 
 !!!Specifications
+
+% extending with custom parameter kinds
 
 !!!Activations
 
