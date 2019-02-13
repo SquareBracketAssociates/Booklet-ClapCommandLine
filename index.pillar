@@ -124,22 +124,59 @@ Parameters compose together with the ==#add:== message: commands can have flags,
 
 !!!!Positional parameters
 
-Positionals are the simplest form of parameters; they each match a single word from the command line, in order.
-As long as it is not ambiguous with a flag, the form of the matched word does not matter for matching, so positionals accept an open-ended set of values: numbers, urls, file names, application-specific names, arbitrary strings…
-However, order between subsequent positionals is important: the user has to know which information comes first and which next, and of course they have to pay attention to the word-splitting rules of their shell and use quotes appropriately.
+Positionals are the simplest form of parameters; each matches a word from the command line, and successive positionals match in order.
+
+Because it is the position of the matched words that matters, instead of their form, positionals accept an open-ended set of values: numbers, URLs, file paths, application-specific identifiers, arbitrary strings…
+However, since order is important, the user has to know which information comes first and which next, and of course they have to pay attention to the word-splitting rules of their shell and use quotes appropriately.
 
 Let's extend the ==hello== command with a positional which specifies the recipient of the greeting.
-To do this we make an instance of ==ClapPositional==, and add to its parent parameter.
+To do this we make an instance of ==ClapPositional==, naming it ==who==, then we add it as a child to the command, and finally we extend the command's meaning block to use the new argument.
 [[[
 ClapBookletHelloExample class >> helloClap
   <commandline>
   ^ (ClapCommand withName: 'hello')
-    add: (ClapPositional withName: 'who')
+    add: ((ClapPositional withName: 'who')
+      implicitMeaning: [ 'world' ]);
+    meaning: [ :args |
+      args context stdout
+        << 'hello, ' ;
+        << (args atName: 'who') value ;
+        lf ]
 ]]]
+
+We now have a parameterized greeting:
+[[[language=shell
+> clap hello Pharo
+hello, Pharo
+]]]
+
+!!!!Parameter matches, meanings, and values
+
+Let's take a short tangent here, since there are a few things to unpack.
+
+First, to use an argument, in this case the greeting's recipient passed via the ==who== positional, we query for it.
+A command matches based on just its name, and once it does, it matches its parameters against the rest of the command line.
+The command's behavior is specified by its meaning block, where ==args== receives a ''match'' describing what, where, and how the ==hello== command matched the command line.
+Like parameters, matches are recursively structured: ==args== contains a child match describing how the ==who== positional matched, which we obtain with the ==#atName:== query message.
+As you can see, matches also provide convenience accessors to the command's execution context, for instance the standard output stream.
+
+Second, the role of the meaning block of a parameter is to translate matches of that parameter into domain values or behavior.
+Clap provides a basic meaning for all parameters, which you can override using the ==#meaning:== accessor; to evaluate the meaning of a given match, send it ==#value==.
+Most commands will specify a custom meaning because the basic one just returns the match.
+However, for positionals, the basic meaning returns the matched command line word, which happens to be exactly what we need for ==who== in this example.
+
+Finally, let's look at what happens if we run ==hello== but omit the positional:
+[[[language=shell
+> clap hello
+hello, world
+]]]
+
+In that case, for lack of an explicit match, the query for =='who'== returns an ''implicit match'', which answers ==#value== using the ==#implicitMeaning:== block instead of the basic meaning, thus returning the recipient =='world'==.
+
 
 !!Clap Explained
 
-Clap is a framework for adding rich command-line interfaces to Pharo code; it sits at the frontier of the image, between application code and the shell environment.
+Clap is a framework for adding rich command line interfaces to Pharo code; it sits at the frontier of the image, between application code and the shell environment.
 There are two main families of objects in Clap:
 - ''Specifications'' describe the syntax and behavior of commands that the image understands.
 - ''Activations'' represent command invocations and their arguments, their domain-level meaning, and which words they map to.
