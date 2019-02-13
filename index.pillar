@@ -118,13 +118,13 @@ You now have a shell program implemented in Pharo!
 
 Let's add some features to our basic command: for instance, greet an arbitrary recipient, in Esperanto, and shouting in uppercase letters:
 [[[language=shell
-> clap hello -s --lang eo Pharo
+> clap hello -s --language eo Pharo
 SALUTON, PHARO!
 ]]]
 
 Clap tries to follow common conventions, but also to keep a simple and coherent model.
 - ''Positionals'' are for passing values from an open set, for instance ==Pharo== specifies the greeting recipient; as their name implies, they are recognized from their position, but their form conveys meaning. Because of that positionals must often be parsed into some adequate domain value, like a number or an URL.
-- ''Flags'' are recognized from their form, usually beginning with dashes, in either short form like ==-s==, or long form like ==-\-shout==; a fixed set of them is acceptable, so they convey meaning through their presence, absence, number of occurrences, and order in the command line. A flag can have child positionals of its own, resulting in a named parameter, as in ==-\-lang eo==.
+- ''Flags'' are recognized from their form, usually beginning with dashes, in either short form like ==-s==, or long form like ==-\-shout==; a fixed set of them is acceptable, so they convey meaning through their presence, absence, number of occurrences, and order in the command line. A flag can have child positionals of its own, resulting in a named parameter, as in ==-\-language eo==.
 - ''Commands'' are identified by a keyword. They can have positionals and flags as children parameters, but also other commands, enabling applications with rich command line syntax like ==git==.
 
 All parameters have a unique and mandatory ''canonical name'', which is the one expected when looking matches up.
