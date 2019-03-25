@@ -32,13 +32,3 @@ after_success:
 branches:
   except:
     - /^(?i:continuous)$/
-
-deploy:
-- provider: bintray
-  file: .bintray.json
-  on:
-    repo: SquareBracketAssociates/Booklet-ClapCommandLine
-  skip_cleanup: true
-  user: ducasse
-  key:
-    secure: TmtxTHbMdFHKlksXjPZMWmRskdODGriBieqLKSsXFs2oobq8oGGMPntyGHPXiS4SaiSgTo5GuilkJz93hvt6AazDRPtHe+JsO6FehNLW2ic4NgKIK59wMajIgiXMzNh5IZ1N9nTaoA959emPLfqP0t8qAtKbQPovW0xrwtyOW7BZYArhcXZ1tER4y+CPI+wjHVrwd4gYBARlRk+LHnnHiq1ORl1OBiTpGkoMegqOE/BuARL3DAB06JHIarwyXS7Xa7wtDVpJqTFAnTUg36ZmvK+hneL6YBR1oLsAoDZ5AZy6bTLD5zQxW2ctDIqdRosWElAHmmMNUduJMC3y1+jdwM0f0UiBEJYvzuQbSquMQWlCjXjHbYsNvBwTuUemSt3KkMkaWtoiAAdJ9O24e0XEfuIbbTcds8+rHIL/q2iY4/FiuUmBxQ4hJEgme6rABhO8sUsFCbXsAppJaKDw9Z4dY54U+0ZQPqvA2iEhBQSBFw8uPfUy0AyUflxTbBkeM2TJmb7U5NaWmQNcXOUs7g6wpoH2hsbq+BPt5hJsbKSIioP+cl7iO3nvDxfuyZq9GZ7EAtcdOUJjrdElbzaHGM72HehxdqdY2scdjBYT5wTr/9xVvxBSCz4SBmTs3daOVTBfhguU9Olbef86ddyt29BrLH1uoERiqKYSqTZt49ZGWzg=
