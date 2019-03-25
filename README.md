@@ -2,10 +2,11 @@
 
 [![Build status][badge]][travis]
 
-This booklet documents [Clap](https://github.com/cdlm/clap-st) and explains how to develop command line programs in Pharo.
+This booklet explains how to develop Pharo command line programs with [Clap](https://github.com/cdlm/clap-st).
 
-The result from the latest successful Travis build can be found [on Bintray (PDF)][bintray].
+The [latest successfully built PDF][wip] can be found under the [releases][] tab.
 
 [travis]: https://travis-ci.org/SquareBracketAssociates/Booklet-ClapCommandLine
 [badge]: https://travis-ci.org/SquareBracketAssociates/Booklet-ClapCommandLine.svg?branch=master
-[bintray]: https://bintray.com/squarebracketassociates/wip/download_file?file_path=Clap-wip.pdf
+[wip]: https://github.com/SquareBracketAssociates/Booklet-ClapCommandLine/releases/download/continuous/Clap-wip.pdf "Latest PDF from CI"
+[releases]: https://github.com/SquareBracketAssociates/Booklet-ClapCommandLine/releases "All releases"
