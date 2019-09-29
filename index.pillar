@@ -1,6 +1,7 @@
 !!Clap by Example
 
-!!!Loading Clap in a fresh image
+Clap is the new library to manage command-line of Pharo. 
+Clap is developed by Damien Pollet. 
 
 
 !!!Trying a command from the workspace
@@ -64,9 +65,36 @@ hello, clap
 @@note In command line examples, lines starting with ==>== indicate commands typed at the shell's prompt. Other lines represent the output of those commands.
 
 One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
-At the time of this writing (Pharo 6.1–7), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
+At the time of this writing (Pharo 8), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
 Eventually, legacy command line handlers should be removed, making the ==clap== keyword superfluous, at which point it will certainly become optional, but in any case, it will be hidden behind the convenience shell aliases or functions that we're going to discuss next.
 
+!!!Getting Pharo runnning from the command line
+Just a parenthesis so that you can play with the tutorial. 
+Here are some simple steps to get pharo ready from the command line. 
+The script presupposes that you have a bin folder in your home directory. 
+
+The following script downloads the stable vm version of Pharo 80. 
+Check the web page [https://get.pharo.org/64/](https://get.pharo.org/64/) to get the possible choices. 
+
+[[[
+cd
+cd bin
+curl https://get.pharo.org/64/vm80 | bash
+]]]
+
+This script creates two scripts, pharo-ui and pharo-vm both using the contents of the Pharo folder that is also created. 
+
+Once installed you can execute pharo as follows: 
+
+[[[
+./pharo-ui Pharo8.image 
+]]]
+
+If you do not want that pharo pops-up a user interface you can invoke it as follows: 
+
+[[[
+./pharo Pharo8.image 
+]]]
 
 !!!Shell tricks for convenience and deployment
 
