@@ -263,6 +263,28 @@ An important point to consider is that the values that we get from the command l
 This is why we have to convert them to the objects we want. 
 Here we convert the month index into numbers so that we can iterate between them. 
 
+A better way is to use the ==#meaning:== message of a particular positional to specify the conversion. 
+Here we rewrite the command to show you the effect
+
+[[[
+myCounter
+	<commandline>
+	^ (ClapCommand withName: 'bettermonths')
+		add: ((ClapPositional withName: 'from') 
+				meaning: [ :pos | pos word asNumber ];
+				implicitMeaning: [ 1 ]);
+		add: ((ClapPositional withName: 'to') 
+				meaning: [ :pos | pos word asNumber ];
+				implicitMeaning: [ 12 ]);
+		meaning: [ :args |
+			| start end |
+			start := (args atName: 'from') value.
+			end := (args atName: 'to') value.
+			args context stdout
+				<< 'Counting, '.
+			start to: end  do: [ :each | args context stdout << each asString ; space ]
+		]
+]]]
 
 
 !!!Parameter matches, meanings, and values
