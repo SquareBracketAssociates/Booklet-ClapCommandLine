@@ -98,7 +98,7 @@ If you do not want that pharo pops-up a user interface you can invoke it as foll
 
 !!!Shell tricks for convenience and deployment
 
-Time for a little tangent.
+Time for another little tangent.
 You should soon find that repeating the virtual machine and image names before each and every command is quite cumbersome.
 To avoid that, we advise that you define the following shell alias:
 [[[language=shell
@@ -140,7 +140,6 @@ Make such a script executable, place it under your ==$PATH==, ''et voilà !''
 You now have a shell program implemented in Pharo!
 
 @@note From this point on in the book, we will use the ==clap== shortcut defined above. Either alias or script are fine, since both provide the same syntax, so pick the one you like best.
-
 
 !!!Specifying parameters
 
@@ -184,11 +183,24 @@ ClapBookletHelloExample class >> helloClap
         lf ]
 ]]]
 
+
 We now have a parameterized greeting:
 [[[language=shell
 > clap hello Pharo
 hello, Pharo
 ]]]
+
+[[[language=shell
+> clap hello
+hello, world
+]]]
+
+!!!! What did we learn
+
+The message ==#implicitMeaning:== provides the default value of the positionable when it is not given.
+The messages ==#implicitMeaning:== as well as ==#meaning:== both expect a block as argument.
+Also notice how the positionable argument is accessed from the method ==#meaning:== message via the message ==#atName:==. 
+
 
 
 !!!Parameter matches, meanings, and values
@@ -200,6 +212,8 @@ A command matches based on just its name, and once it does, it matches its param
 The command's behavior is specified by its meaning block, where ==args== receives a ''match'' describing what, where, and how the ==hello== command matched the command line.
 Like parameters, matches are recursively structured: ==args== contains a child match describing how the ==who== positional matched, which we obtain with the ==#atName:== query message.
 As you can see, matches also provide convenience accessors to the command's execution context, for instance the standard output stream.
+
+@@note from SD to CDLM: I found the match above confusing. Similarly the following paragraph is unclear. I did not get what you want to say. I read the text but it does not mean much to me. I do not understand what is a match nor what is a meaning. 
 
 Second, the role of the meaning block of a parameter is to translate matches of that parameter into domain values or behavior.
 Clap provides a basic meaning for all parameters, which you can override using the ==#meaning:== accessor; to evaluate the meaning of a given match, send it ==#value==.
@@ -217,9 +231,13 @@ In that case, for lack of an explicit match, the query for =='who'== returns an 
 
 !!!Flags and options
 
+oops!
+
 
 !!!Commands and subcommands
 
+Reoops!
+How do I write a command then :(
 
 !!Clap Explained
 
