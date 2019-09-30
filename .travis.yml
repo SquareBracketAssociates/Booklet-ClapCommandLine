@@ -15,11 +15,11 @@ env:
   - JOB=test TYPE=System ARCHETYPE=book OUTPUT=pdf
 
 install:
-  # Pillar installation
-  - git clone https://github.com/pillar-markup/pillar.git -b dev-7 # Clone pillar
-  - cd pillar && ./scripts/build.sh && cd ..                              # Run pillar build script. Pillar will be built in `pwd`/build!
-  - . pillar/scripts/ci/ensure_latex.sh                                   # Install latex
-  - ./pillar/scripts/ci/ensure_book_dependencies.sh                       # Install latex dependencies required by pillar
+  # install Pillar (under ./build)
+  - git clone https://github.com/pillar-markup/pillar.git -b dev-7
+  - cd pillar && ./scripts/build.sh && cd ..
+  - . pillar/scripts/ci/ensure_latex.sh
+  - ./pillar/scripts/ci/ensure_book_dependencies.sh
 
 script:
   - ./pillar/build/pillar build pdf
