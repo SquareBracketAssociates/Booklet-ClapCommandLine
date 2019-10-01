@@ -62,15 +62,20 @@ cmd := (ClapCommand withName: 'hello')
     args context stdout << 'hello, clap'; lf ].
 ]]]
 
+
+
 For development convenience, arbitrary command objects can be run from the Pharo workspace, by sending them the ==#activateWith:== message, passing the array of words that would be typed to invoke it:
 [[[
 cmd activateWith: #('hello').
 ]]]
 
+
 Keep in mind that Clap commands are intended to be launched from a terminal.
-This is why we have to pass that array of strings, since that's how all shell programs receive their arguments, but also why you will not see any output inside Pharo: the text gets printed on the standard output ''of the Pharo virtual machine process''.
+This is why we have to pass that array of **strings**, since that's how all shell programs receive their arguments, but also why you will not see any output inside Pharo: the text gets printed on the standard output ''of the Pharo virtual machine process''.
 
 @@note ''Launch Pharo from the terminal''. Most examples assume an interactive session, but print to the standard output. Launching Pharo from desktop environment means you would run examples blind.
+
+@@note When testing from the image a command using ==#activateWith:== make sure that you only pass strings to the array.
 
 !!!Registering a command for use in the terminal
 
@@ -110,11 +115,11 @@ Save your image, and, in a new terminal window, try the following; of course, us
 hello, clap
 ]]]
 
-@@note In command line examples, lines starting with ==>== indicate commands typed at the shell's prompt. Other lines represent the output of those commands.
+In command line examples, lines starting with ==>== indicate commands typed at the shell's prompt. Other lines represent the output of those commands.
 
 @@note Pay attention, the case of the command name is important. ==(ClapCommand withName: 'hello')== is different from ==(ClapCommand withName: 'Hello')==.
 
-@@note When developing a command, close the pharo image in which you are coding the command before testing it from the command-line. Else the system may not recognised immediately your new command.
+@@note When developing a command, close the pharo image in which you are coding a command before testing it from the command-line. Else the system may not recognise immediately your new command and report unnecessary errors.
 
 One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
 At the time of this writing (Pharo 8), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
