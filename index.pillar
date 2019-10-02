@@ -307,6 +307,25 @@ myCounter
 		]
 ]]]
 
+But a better way to define the behavior is to follow the pattern presented in Section. 
+
+
+
+
+!!! Having 
+
+[[[
+ClapCommandLineExamples>>recipients
+	^ (arguments at: #who) allOccurrencesCollect: [ :arg | arg value: self ]
+]]]
+
+
+[[[
+> clap hello foo bar baz
+hello, foo.
+hello, bar.
+hello, baz.
+]]]
 
 !!!Parameter matches, meanings, and values
 
@@ -345,10 +364,184 @@ In that case, for lack of an explicit match, the query for =='who'== returns an 
 oops!
 
 
+!!!Exist success
+
+[[[
+meaning: [ :args | 
+			args exitSuccess
+				]
+]]]
+
+Usually we do not have to do it since when the block is fully executed an exitSuccess is raised
+
+[[[
+meaning: [ :args | 
+			args exitFailure
+				]
+]]]
+
+status one
+
+[[[
+meaning: [ :args | 
+			args exitFailure:
+				]
+]]]
+
+status one
+
+
+
 !!!Commands and subcommands
 
 Reoops!
 How do I write a command then :(
+
+
+!!! How to write an Help 
+
+flag help et command help
+
+!!!! flag help
+Create a text based on the command elements (positionables,.... )
+[[[
+clap hello --help
+> 
+
+> clap eval --help 
+]]]
+
+the flag should be explicitly check in the command meaning
+Because --help takes precedence over the other arguments. 
+
+[[[
+hello
+	"The usual Hello-World example, demonstrating a Clap command with a couple options."
+
+	<commandline>
+	^ (ClapCommand withName: 'hello')
+		description: 'Provides greetings';
+		add: ClapFlag forHelp;
+		add: ((ClapFlag withName: 'whisper') description: 'Greet discretely');
+		add: ((ClapFlag withName: 'shout') description: 'Greet loudly');
+		add:
+			((ClapFlag withName: 'language')
+				description: 'Select language of greeting';
+				add: ((ClapPositional withName: 'langCode')
+					meaning: [ :pos | pos word asSymbol ];
+					implicitMeaning: [ #en ]);
+				meaning: [ :flag | (flag atName: 'langCode') value ]);
+		add:
+			((ClapPositional withName: 'who')
+				description: 'Recipient of the greetings';
+				multiple: true;
+				implicitMeaning: [ 'world' ]);
+		meaning: [ :args | 
+			args
+				atName: 'help'
+				ifFound: [ :help | 
+					help
+						value;
+						exitSuccess ].
+			(self with: args) sayHello ]
+]]]
+
+
+
+!!!! Command help
+
+A command help also exists. It documents either the commands available or let you specify the one you want. 
+[[[
+pharo80 P8Indian.image clap help      
+Entry point for commands implemented with Clap
+
+Usage: clap [--help]
+
+Options:
+    --help      Prints this documentation
+
+Commands:
+    help        Prints command documentation
+    evaluate    Print the result of a Pharo expression
+    hello       Provides greetings
+    version     Displays version information, in various formats
+    bettermonths
+]]]
+
+[[[
+pharo80 P8Indian.image clap help hello
+Provides greetings
+
+Usage: hello [--help] [--whisper] [--shout] [--language] [<who>]
+
+Parameters:
+    <who>       Recipient of the greetings
+
+Options:
+    --help      Prints this documentation
+    --whisper   Greet discretely
+    --shout     Greet loudly
+    --language
+                Select language of greeting
+]]]
+
+
+!!! Command vs. flag
+
+flag: you have to manage it explicitly 
+- add flag ==add: ClapFlag forHelp;==
+- in meaning: 
+
+[[[
+args
+	atName: 'help'
+	ifFound: [ :help |
+		help
+			value;
+			exitSuccess ].
+]]]
+
+command: 
+Potential Conflict with positional
+
+[[[
+> clap hello help 
+Hello, help 
+]]]
+
+
+
+!! Patterns of command definition
+
+!!! Patterns to express meaning
+
+[[[
+meaning: [ :args | 
+			args
+				atName: 'help'
+				ifFound: [ :help | 
+					help
+						value;
+						exitSuccess ].
+			(self with: args) sayHello ]
+]]]
+
+
+[[[
+with: arguments
+	^ self new
+		setArguments: arguments;
+		yourself
+]]]
+
+
+
+Control the border between the shell world (strings) and Pharo objects.
+Two choices:
+- convert in the meaning block from string to objects
+- pass all the arguments to the domain with a specific API 
+
+
 
 !!Clap Explained
 
@@ -362,6 +555,10 @@ Before we start with the details, let's recap the general workflow with Clap:
 # On the image side, Clap receives the command with its arguments as an array of words, and creates an activation context, matching the arguments with known commands specifications.
 # A successful match has meaning defined by application code, which queries the context for domain-level meaning or raw syntax of command parameters, and for external resources like input/output streams.
 # When the application code runs to completion, Clap cleanly exits the image. Alternatively, the application can tell the context to terminate early, with a deliberate exit status, or if it fails to handle an exception, Clap catches it and gracefully reports the error.
+
+
+
+
 
 !!!Specifications
 
