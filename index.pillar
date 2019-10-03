@@ -361,7 +361,15 @@ In that case, for lack of an explicit match, the query for =='who'== returns an 
 
 !!!Flags and options
 
-oops!
+
+!!!! default boolean value
+
+tu peux toujours faire ==aFlagMatch isExplicit== pour savoir si il était présent explicitement
+
+mais aFlagMatch value fait la même chose si tu ne lui as pas donné de meaning
+
+
+
 
 
 !!!Exist success
@@ -411,8 +419,8 @@ clap hello --help
 > clap eval --help 
 ]]]
 
-the flag should be explicitly check in the command meaning
-Because --help takes precedence over the other arguments. 
+Pay attention the flag should be explicitly check in the command meaning
+Because \-\-help takes precedence over the other arguments. 
 
 [[[
 hello
