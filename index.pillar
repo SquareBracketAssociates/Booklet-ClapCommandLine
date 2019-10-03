@@ -1,49 +1,99 @@
 !!What is Clap?
 
 Clap is the new library for implementing ''command line applications'' in Pharo.
+In this book, all examples assume that Pharo runs under a unix-like operating system (macOS or Linux).
 
-!!! Command line applications
+!!!Command line applications
 
-A command line application consists of a single command, or sometimes a suite of related commands, that you invoke from a terminal session, passing any arguments required.
-The example below shows printing month and year with the well-known ==date== shell command:
+A command line application consists of a single command or of several related commands designed to be used either interactively from a shell, or programmatically in shell scripts.
+Clap supports applications with rich command line syntax, supporting positional parameters, flags or options, and even nested subcommands like ==git==; it also tries to follow well-established conventions like short and long alternative syntaxes for flags.
+
+The example below show two different uses of the standard ==seq== command, which generates numeric sequences:
 [[[language=shell
-> date +'%B %Y'
-September 2019
+> seq 3
+1
+2
+3
+> seq -s : 5 12
+5:6:7:8:9:10:11:12
 ]]]
 
-@@note In this book, code blocks show either a terminal session, as above, or pieces of Pharo code, which you will recognize from the syntax. In terminal sessions, lines starting with ==>== represent the command prompt followed by a command entered at that point; subsequent lines, up to the next prompt, show the output of that command.
-
-Clap supports applications with rich command line syntax, including positional parameters, flags, options, and even recursive subcommands like ==git==.
-However Clap differs a little from command line libraries in other languages, because a single Pharo image can provide multiple commands; in fact, several commands are already included in the base Pharo image.
-For this, Clap provides a simple registration mechanism, which allows you to simply load the code of your command in the image to make it available.
+@@note In this book, code blocks show either the recording of a shell session, as above, or pieces of Pharo code, which you will recognize from the syntax. In shell sessions, lines starting with ==>== represent the command prompt followed by a command entered at that point; subsequent lines, up to the next prompt, show the output of that command.
 
 !!!Pharo from the command line
 
-Just a parenthesis so that you can play with the tutorial.
-Here are some simple steps to get pharo ready from the command line.
-The script presupposes that you have a bin folder in your home directory.
+First of all, to follow along the examples in this book, you will need to make Pharo available from the command line.
+The easiest way to get started is to install a standalone Pharo instead of using Pharo Launcher, as described at *https://www.pharo.org/download#standalone*.
 
-The following script downloads the stable vm version of Pharo 80.
-Check the web page [https://get.pharo.org/64/](https://get.pharo.org/64/) to get the possible choices.
-
+The following instructions install a suitable virtual machine.
+This assumes that the directory ==~/bin== is already in your ==$PATH==; feel free to pick someplace else but make sure to adapt your shell configuration accordingly.
 [[[language=shell
-cd ~/bin
-curl https://get.pharo.org/64/vm80 | bash
+> cd ~/bin
+> curl https://get.pharo.org/64/vm80 | bash
 ]]]
 
-This script creates two scripts, pharo-ui and pharo-vm both using the contents of the Pharo folder that is also created.
-
-Once installed you can execute pharo as follows:
-
+The virtual machine comes with two executable wrapper scripts.
+To open an image with its graphical user interface active, run it with ==pharo-ui==:
 [[[language=shell
-./pharo-ui Pharo8.image
+> pharo-ui Pharo8.image
 ]]]
 
-If you do not want that pharo pops-up a user interface you can invoke it as follows:
-
+Conversely, ==pharo== runs the image ''headless'', which is what we will use with Clap; note that in the absence of arguments, the image immediately quits with a help message:
 [[[language=shell
-./pharo Pharo8.image
+> pharo Pharo8.image
 ]]]
+
+To run Clap commands, follow the image name with the ==clap== keyword, then the command itself.
+Clap comes with the traditional ''"hello world"'' as an example, if you want to try it:
+[[[language=shell
+> pharo Pharo8.image clap hello
+hello, world.
+> pharo Pharo8.image clap hello "pharo and clap"
+hello, pharo and clap.
+]]]
+
+!!!Shell tricks for convenience and deployment
+
+You will certainly find that repeating the virtual machine and image names before each and every command is a little tedious.
+To make this more convenient, we advise that you define the following shell alias, which makes ==clap== look more like an actual shell command:
+[[[language=shell
+> alias clap='pharo Pharo8.image clap'
+> clap hello
+hello, world.
+]]]
+
+We could also define shell aliases for direct access to specific Clap commands:
+[[[language=shell
+> alias hello='pharo Pharo8.image clap hello'
+> hello
+hello, world.
+]]]
+
+However, while aliases make fine shortcuts, they are usually limited to interactive use, as a personal convenience feature.
+To deploy a Clap command in the system's ==$PATH==, a wrapper shell script is good solution;
+make such a script executable, place it under your ==$PATH==, ''et voilà !''
+You now have a shell program implemented in Pharo!
+[[[language=bash
+#!/bin/bash
+exec pharo Pharo8.image clap "$@"
+]]]
+
+Alternatively, functions provide a more scoped abstraction:
+[[[language=bash
+#!/bin/bash
+function clap() { pharo Pharo8.image clap "$@"; }
+function hello() { clap hello "$@"; }
+# and later, in the script's body...
+hello
+]]]
+
+Note the use of =="$@"== to pass all function arguments unchanged to the callee.
+Please consult your shell's documentation for further advice on gotchas and best practices.
+
+@@note From this point on in the book, we will use the ==clap== shortcut defined above. Either alias or script are fine, since both provide the same syntax, so pick the one most convenient to you.
+
+Clap differs a little from command line libraries in other languages, because a single Pharo image can provide multiple commands; in fact, several commands are already included in the base Pharo image.
+For this, Clap provides a simple registration mechanism, which allows you to simply load the code of your command in the image to make it available.
 
 
 !!Clap by Example
@@ -124,51 +174,6 @@ In command line examples, lines starting with ==>== indicate commands typed at t
 One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
 At the time of this writing (Pharo 8), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
 Eventually, legacy command line handlers should be removed, making the ==clap== keyword superfluous, at which point it will certainly become optional, but in any case, it will be hidden behind the convenience shell aliases or functions that we're going to discuss next.
-
-!!!Shell tricks for convenience and deployment
-
-Time for another little tangent.
-You should soon find that repeating the virtual machine and image names before each and every command is quite cumbersome.
-To avoid that, we advise that you define the following shell alias:
-[[[language=shell
-> alias clap='pharo clap.image clap'
-]]]
-
-The ==clap== alias abstracts away most of the ceremony and makes it look more like an actual shell command:
-[[[language=shell
-> clap hello
-hello, clap
-]]]
-
-To spare even more typing, we can define additional shell aliases as needed.
-Our simple ==hello== command could be wrapped like so:
-[[[language=shell
-> alias hello='pharo clap.image clap hello'
-> hello
-hello, clap
-]]]
-
-However, while aliases make fine shortcuts, they are usually limited to interactive use, as a personal convenience feature.
-To deploy a Clap command in the system's ==$PATH==, we need a wrapper shell script:
-[[[language=bash
-#!/bin/bash
-exec pharo clap.image clap "$@"
-]]]
-
-Alternatively, shell functions provide an intermediate abstraction measure:
-[[[language=bash
-#!/bin/bash
-function clap() { pharo clap.image clap "$@"; }
-function hello() { clap hello "$@"; }
-# and later, in the script's body...
-hello
-]]]
-
-Note the use of =="$@"== to pass all function arguments unchanged to the callee.
-Make such a script executable, place it under your ==$PATH==, ''et voilà !''
-You now have a shell program implemented in Pharo!
-
-@@note From this point on in the book, we will use the ==clap== shortcut defined above. Either alias or script are fine, since both provide the same syntax, so pick the one you like best.
 
 !!!Specifying parameters
 
