@@ -92,11 +92,21 @@ Please consult your shell's documentation for further advice on best practices.
 
 @@note From this point on in the book, we will use the ==clap== shortcut defined above. Either alias or script are fine, since both provide the same syntax, so pick the one most convenient to you.
 
+!!!Deploying Clap commands
+
+A single Pharo image can host several Clap commands; in fact the base image includes commands for automating development tasks like loading code, running tests.
+Loading additional commands into an image is as simple as loading the corresponding packages; Clap discovers declared commands automatically.
+
+However, when installing a command on your own system, or packaging it for other users to install, you will have to consider a few details:
+- Commands can modify their host image, but this does not make sense in the case of globally installed an application.
+- Two commands installed in a common image cannot have the same name.
+- The wrapper script for a command must know which image to run and with which VM.
+We do not have generic answers to those questions but we are interested in your feedback.
+
 
 !!Clap by Example
 
 Through simple examples, this chapter shows how to declare the syntax and define the behavior of Clap commands.
-
 
 !!!Trying a command from the workspace
 
