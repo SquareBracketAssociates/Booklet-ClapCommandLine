@@ -1,4 +1,4 @@
-!!What is Clap?
+!!Before we start
 
 Clap is the new library for implementing ''command line applications'' in Pharo.
 In this book, all examples assume that Pharo runs under a unix-like operating system (macOS or Linux).
@@ -22,8 +22,8 @@ The example below show two different uses of the standard ==seq== command, which
 
 !!!Pharo from the command line
 
-First of all, to follow along the examples in this book, you will need to make Pharo available from the command line.
-The easiest way to get started is to install a standalone Pharo instead of using Pharo Launcher, as described at *https://www.pharo.org/download#standalone*.
+To follow along the examples in this book, you will need to make Pharo available from the command line.
+The easiest way is to install a standalone Pharo as described at *https://www.pharo.org/download#standalone*, instead of using Pharo Launcher.
 
 The following instructions install a suitable virtual machine.
 This assumes that the directory ==~/bin== is already in your ==$PATH==; feel free to pick someplace else but make sure to adapt your shell configuration accordingly.
@@ -52,7 +52,7 @@ hello, world.
 hello, pharo and clap.
 ]]]
 
-!!!Shell tricks for convenience and deployment
+!!!Shell tricks for convenience
 
 You will certainly find that repeating the virtual machine and image names before each and every command is a little tedious.
 To make this more convenient, we advise that you define the following shell alias, which makes ==clap== look more like an actual shell command:
@@ -62,7 +62,7 @@ To make this more convenient, we advise that you define the following shell alia
 hello, world.
 ]]]
 
-We could also define shell aliases for direct access to specific Clap commands:
+We could also define a direct shell alias to the ==hello== command:
 [[[language=shell
 > alias hello='pharo Pharo8.image clap hello'
 > hello
@@ -88,18 +88,14 @@ hello
 ]]]
 
 Note the use of =="$@"== to pass all function arguments unchanged to the callee.
-Please consult your shell's documentation for further advice on gotchas and best practices.
+Please consult your shell's documentation for further advice on best practices.
 
 @@note From this point on in the book, we will use the ==clap== shortcut defined above. Either alias or script are fine, since both provide the same syntax, so pick the one most convenient to you.
-
-Clap differs a little from command line libraries in other languages, because a single Pharo image can provide multiple commands; in fact, several commands are already included in the base Pharo image.
-For this, Clap provides a simple registration mechanism, which allows you to simply load the code of your command in the image to make it available.
 
 
 !!Clap by Example
 
-Using several simple examples, this document will show you the structure of a command (a name, positional, flags and parameters).
-It will show how to define and register a command.
+Through simple examples, this chapter shows how to declare the syntax and define the behavior of Clap commands.
 
 
 !!!Trying a command from the workspace
