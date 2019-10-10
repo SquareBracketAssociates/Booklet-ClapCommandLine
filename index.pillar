@@ -3,6 +3,7 @@
 Clap is the new library for implementing ''command line applications'' in Pharo.
 In this book, all examples assume that Pharo runs under a unix-like operating system (macOS or Linux).
 
+
 !!!Command line applications
 
 A command line application consists of a single command or of several related commands designed to be used either interactively from a shell, or programmatically in shell scripts.
@@ -19,6 +20,7 @@ The example below show two different uses of the standard ==seq== command, which
 ]]]
 
 @@note In this book, code blocks show either the recording of a shell session, as above, or pieces of Pharo code, which you will recognize from the syntax. In shell sessions, lines starting with ==>== represent the command prompt followed by a command entered at that point; subsequent lines, up to the next prompt, show the output of that command.
+
 
 !!!Pharo from the command line
 
@@ -51,6 +53,7 @@ hello, world.
 > pharo Pharo8.image clap hello "pharo and clap"
 hello, pharo and clap.
 ]]]
+
 
 !!!Shell tricks for convenience
 
@@ -109,6 +112,7 @@ We do not have generic answers to those questions but we are interested in your 
 
 Through simple examples, this chapter shows how to declare the syntax and define the behavior of Clap commands.
 
+
 !!!Trying a command from the workspace
 
 The first step in defining a command line application with Clap is to describe its interface.
@@ -133,6 +137,7 @@ This is why we have to pass that array of **strings**, since that's how all shel
 @@note ''Launch Pharo from the terminal''. Most examples assume an interactive session, but print to the standard output. Launching Pharo from desktop environment means you would run examples blind.
 
 @@note When testing from the image a command using ==#activateWith:== make sure that you only pass strings to the array.
+
 
 !!!Registering a command for use in the terminal
 
@@ -181,6 +186,7 @@ In command line examples, lines starting with ==>== indicate commands typed at t
 One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
 At the time of this writing (Pharo 8), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
 Eventually, legacy command line handlers should be removed, making the ==clap== keyword superfluous, at which point it will certainly become optional, but in any case, it will be hidden behind the convenience shell aliases or functions that we're going to discuss next.
+
 
 !!!Specifying parameters
 
@@ -243,6 +249,7 @@ hello, Pharo
 > clap hello
 hello, world
 ]]]
+
 
 !!!! What did we learn
 
@@ -319,9 +326,7 @@ myCounter
 		]
 ]]]
 
-But a better way to define the behavior is to follow the pattern presented in Section. 
-
-
+But a better way to define the behavior is to follow the pattern presented in Section.
 
 
 !!! Multiple times the same positionable
@@ -339,6 +344,7 @@ hello, foo.
 hello, bar.
 hello, baz.
 ]]]
+
 
 !!!Parameter matches, meanings, and values
 
@@ -366,15 +372,11 @@ hello, world
 In that case, for lack of an explicit match, the query for =='who'== returns an ''implicit match'', which answers ==#value== using the ==#implicitMeaning:== block instead of the basic meaning, thus returning the recipient =='world'==.
 
 
-
-
-
-
-
-
 !!!Flags and options
 
 from SD to CDLM: more here please
+
+
 !!!! default boolean value
 
 tu peux toujours faire ==aFlagMatch isExplicit== pour savoir si il était présent explicitement
@@ -382,13 +384,10 @@ tu peux toujours faire ==aFlagMatch isExplicit== pour savoir si il était prése
 mais aFlagMatch value fait la même chose si tu ne lui as pas donné de meaning
 
 
-
-
-
-!!!Exist success
+!!!Exit success
 
 [[[
-meaning: [ :args | 
+meaning: [ :args |
 			args exitSuccess
 				]
 ]]]
@@ -396,7 +395,7 @@ meaning: [ :args |
 Usually we do not have to do it since when the block is fully executed an exitSuccess is raised
 
 [[[
-meaning: [ :args | 
+meaning: [ :args |
 			args exitFailure
 				]
 ]]]
@@ -404,7 +403,7 @@ meaning: [ :args |
 status one
 
 [[[
-meaning: [ :args | 
+meaning: [ :args |
 			args exitFailure:
 				]
 ]]]
@@ -412,51 +411,53 @@ meaning: [ :args |
 status one
 
 
-
 !!!Commands and subcommands
 
 Reoops!
 How do I write a command then :(
 
-How we access parent command from subcommand 
+How we access parent command from subcommand
 args context parent probably?
 
-the example is 
+the example is
 
 [[[
-myCommand 
+myCommand
 	— baseDirectory
 	— months
 	— renter
 
 et je veux dump qui fait un dump donc comme sous commande?
 
-	— dump 
+	— dump
 ]]]
 
 
 	comment dump peut acceder a —basedirectory
 
 
-quittance —baseDirectory /tmp -dump 
+quittance —baseDirectory /tmp -dump
 
 ]]]
 
-!!! Free help 
+
+!!! Free help
 
 flag help et command help
 
+
 !!!! flag help
+
 Create a text based on the command elements (positionables,.... )
 [[[
 clap hello --help
-> 
+>
 
-> clap eval --help 
+> clap eval --help
 ]]]
 
 Pay attention the flag should be explicitly check in the command meaning
-Because \-\-help takes precedence over the other arguments. 
+Because \-\-help takes precedence over the other arguments.
 
 [[[
 hello
@@ -480,10 +481,10 @@ hello
 				description: 'Recipient of the greetings';
 				multiple: true;
 				implicitMeaning: [ 'world' ]);
-		meaning: [ :args | 
+		meaning: [ :args |
 			args
 				atName: 'help'
-				ifFound: [ :help | 
+				ifFound: [ :help |
 					help
 						value;
 						exitSuccess ].
@@ -491,12 +492,11 @@ hello
 ]]]
 
 
-
 !!!! Command help
 
-A command help also exists. It documents either the commands available or let you specify the one you want. 
+A command help also exists. It documents either the commands available or let you specify the one you want.
 [[[
-pharo80 P8Indian.image clap help      
+pharo80 P8Indian.image clap help
 Entry point for commands implemented with Clap
 
 Usage: clap [--help]
@@ -532,9 +532,9 @@ Options:
 
 !!! Command vs. flag
 
-flag: you have to manage it explicitly 
+flag: you have to manage it explicitly
 - add flag ==add: ClapFlag forHelp;==
-- in meaning: 
+- in meaning:
 
 [[[
 args
@@ -545,25 +545,25 @@ args
 			exitSuccess ].
 ]]]
 
-command: 
+command:
 Potential Conflict with positional
 
 [[[
-> clap hello help 
-Hello, help 
+> clap hello help
+Hello, help
 ]]]
-
 
 
 !! Patterns of command definition
 
+
 !!! Patterns to express meaning
 
 [[[
-meaning: [ :args | 
+meaning: [ :args |
 			args
 				atName: 'help'
-				ifFound: [ :help | 
+				ifFound: [ :help |
 					help
 						value;
 						exitSuccess ].
@@ -583,8 +583,7 @@ with: arguments
 Control the border between the shell world (strings) and Pharo objects.
 Two choices:
 - convert in the meaning block from string to objects
-- pass all the arguments to the domain with a specific API 
-
+- pass all the arguments to the domain with a specific API
 
 
 !!Clap Explained
@@ -601,12 +600,10 @@ Before we start with the details, let's recap the general workflow with Clap:
 # When the application code runs to completion, Clap cleanly exits the image. Alternatively, the application can tell the context to terminate early, with a deliberate exit status, or if it fails to handle an exception, Clap catches it and gracefully reports the error.
 
 
-
-
-
 !!!Specifications
 
 % extending with custom parameter kinds
+
 
 !!!Activations
 
