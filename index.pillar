@@ -93,7 +93,7 @@ hello
 Note that =="$@"== passes all function arguments unchanged to the callee, as if they were ''individually'' quoted.
 Please consult your shell's documentation for further enlightenment on shell semantics and for advice on best practices.
 
-@@note From this point on, we will use the ==clap== shortcut defined above. Since both the alias and the script provide the same syntax, either is fine; pick the one most convenient to you.
+@@note From this point on, we will use the ==clap== shortcut defined above. Since both the alias and the script provide the same syntax, either is fine; however, pay attention that the image name is correct, and, unless it's an absolute path to the image file, that your shell session is in the correct working directory.
 
 
 !!!Deploying Clap commands
@@ -101,17 +101,70 @@ Please consult your shell's documentation for further enlightenment on shell sem
 A single Pharo image can host several Clap commands; in fact the base image includes commands for automating development tasks like loading code or running tests.
 Loading additional commands into an image is as simple as loading the corresponding packages; Clap discovers declared commands automatically.
 
-However, either when loading commands in an image, installing them on your own system, or packaging them for other users to install, you will have to consider a few details:
+However, either when loading commands in an image, installing them on your own system, or packaging them for other users to install, you will have to consider a few gotchas:
 - Two commands installed in a common image cannot have the same name.
-- The wrapper script for a command must know which image to run and with which VM.
+- The wrapper script for a command must know which image to run and with which VM; if one or the other are known by relative path, then the working directory matters.
 - Commands can modify their host image, inducing side-effects between successive runs or between independent commands hosted in a common image.
 We do not have generic answers to those questions but we are interested in your feedback.
 
 
 !!Clap by Example
 
-Through simple examples, this chapter shows how to declare the syntax and define the behavior of Clap commands.
+Through simple examples, this chapter shows how to specify the syntax and behavior of Clap commands.
 
+
+!!!Declaring a command
+
+Clap relies on a simple convention for registering commands: any class-side unary method with the ==<commandline>== pragma is a factory method that returns the specification of a unique command.
+
+As a first example, let's build a command that enumerates the months in the year.
+We start with a new empty class:
+[[[
+Object subclass: #ClapBookletMonthsCommand
+  slots: {}
+  classVariables: {  }
+  package: 'Clap-BookletExamples'
+]]]
+
+Then, on the class-side, we add a unary method with the ==<commandline>== pragma, and which returns the specification of a command named ==months==:
+[[[
+ClapBookletMonthsCommand class >> commandSpecification
+  <commandline>
+  ^ ClapCommand id: #months
+]]]
+
+@@note Before trying commands, save the image. This is necessary because every command line invocation spawns a separate virtual machine, which will load the image as it is on disk.
+
+After saving the image, switch to a terminal window and try either the explicit or the short version:
+[[[language=shell
+> pharo Pharo8.image clap months
+> clap months
+]]]
+
+Of course, you should not see any output, since our command does not have any behavior yet; however, the command's exit status should be zero, indicating success.
+
+If you try a command or parameters that do not exist, mistype the name, or forget to save the image after declaring the command, the exit status should be nonzero, indicating that the command failed, and you should get an error message:
+[[[language=shell
+> clap oops wrong command
+Unrecognized arguments: oops, wrong, command
+> echo "exit status was $?"
+exit status was 1
+]]]
+
+@@note Clap is case-sensitive when matching the names of commands and other named parameters.
+
+
+!!!Giving behavior to a command
+
+To make our ==months== command do something when invoked, we have to specify its meaning; modify its declaration as follows:
+[[[
+commandSpecification
+  <commandline>
+  ^ (ClapCommand id: #months)
+    meaning: [ :args |
+      1 to: 12 do: [ :each |
+        args context stdout << each asString; space ] ]
+]]]
 
 !!!Trying a command from the workspace
 
@@ -137,55 +190,6 @@ This is why we have to pass that array of **strings**, since that's how all shel
 @@note ''Launch Pharo from the terminal''. Most examples assume an interactive session, but print to the standard output. Launching Pharo from desktop environment means you would run examples blind.
 
 @@note When testing from the image a command using ==#activateWith:== make sure that you only pass strings to the array.
-
-
-!!!Registering a command for use in the terminal
-
-Because a single Pharo image can host multiple independent Clap commands, Clap relies on a registration mechanism to automatically identify the set of commands available.
-
-To register a command, simply return its specification from a factory method with the ==<commandline>== pragma.
-By ''factory method'', we only mean a class-side method, with no argument, and which returns a command specification instance.
-Clap does not assume anything else: how you name the method and in which class and package you define it is entirely up to you.
-
-Let's first create a class to host our ==hello== command:
-[[[
-Object subclass: #ClapBookletHelloExample
-  slots: {}
-  classVariables: {  }
-  package: 'Clap-BookletExamples'
-]]]
-
-And then we add a class-side method with the command definition.
-Any meaningful unary selector is fine, but do not forget the ==<commandline>== pragma or to return the freshly built ==ClapCommand== instance:
-[[[
-ClapBookletHelloExample class >> helloClap
-  <commandline>
-  ^ (ClapCommand withName: 'hello')
-    meaning: [ :args |
-      args context stdout << 'hello, clap'; lf ]
-]]]
-
-Testing from the workspace is now a bit more concise:
-[[[
-ClapBookletHelloExample helloClap activateWith: #('hello')
-]]]
-
-However, you should now be able to run it from the command line as well.
-Save your image, and, in a new terminal window, try the following; of course, use your specific virtual machine and image in place of ==pharo clap.image==:
-[[[language=shell
-> pharo clap.image clap hello
-hello, clap
-]]]
-
-In command line examples, lines starting with ==>== indicate commands typed at the shell's prompt. Other lines represent the output of those commands.
-
-@@note Pay attention, the case of the command name is important. ==(ClapCommand withName: 'hello')== is different from ==(ClapCommand withName: 'Hello')==.
-
-@@note When developing a command, close the pharo image in which you are coding a command before testing it from the command-line. Else the system may not recognise immediately your new command and report unnecessary errors.
-
-One last detail… You might wonder what the ==clap== word following the Pharo image name in the above definition is for.
-At the time of this writing (Pharo 8), this keyword is necessary for Clap to exist alongside the legacy command line handlers.
-Eventually, legacy command line handlers should be removed, making the ==clap== keyword superfluous, at which point it will certainly become optional, but in any case, it will be hidden behind the convenience shell aliases or functions that we're going to discuss next.
 
 
 !!!Specifying parameters
