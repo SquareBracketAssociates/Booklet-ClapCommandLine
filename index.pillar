@@ -141,7 +141,8 @@ After saving the image, switch to a terminal window and try either the explicit 
 > clap months
 ]]]
 
-Of course, you should not see any output, since our command does not have any behavior yet; however, the command's exit status should be zero, indicating success.
+Of course, since we have not given any behavior to the command yet, you should not see any output.
+However, Clap takes care of terminating the execution with an exit status of zero, indicating success.
 
 If you try a command or parameters that do not exist, mistype the name, or forget to save the image after declaring the command, the exit status should be nonzero, indicating that the command failed, and you should get an error message:
 [[[language=shell
@@ -156,15 +157,26 @@ exit status was 1
 
 !!!Giving behavior to a command
 
-To make our ==months== command do something when invoked, we have to specify its meaning; modify its declaration as follows:
+To make our ==months== command do something when invoked, we have to specify its ''meaning''; modify its declaration as follows:
 [[[
 commandSpecification
-  <commandline>
-  ^ (ClapCommand id: #months)
-    meaning: [ :args |
-      1 to: 12 do: [ :each |
-        args context stdout << each asString; space ] ]
+	<commandline>
+	^ (ClapCommand id: #months)
+		meaning: [ :args | | out |
+			out := args context stdout.
+			(1 to: 12)
+				do: [ :each | out << each asString ]
+				separatedBy: [ out space ].
+			out newLine ]
 ]]]
+
+When Clap recognizes a command, it evaluates that command's ==#meaning:== block.
+The block receives a ''match'' object which provides context on the command's invocation, like what arguments the command had, if any, but here we just needed the stream for writing to standard output.
+[[[language=shell
+> clap months
+1 2 3 4 5 6 7 8 9 10 11 12
+]]]
+
 
 !!!Trying a command from the workspace
 
