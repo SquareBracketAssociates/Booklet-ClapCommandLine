@@ -157,21 +157,22 @@ exit status was 1
 
 !!!Giving behavior to a command
 
-To make our ==months== command do something when invoked, we have to specify its ''meaning''; modify its declaration as follows:
+As a start, let's have our ==months== command print the month numbers one to twelve.
+We configure the command's behavior by setting its ''meaning'' block, as follows:
 [[[
 commandSpecification
-	<commandline>
-	^ (ClapCommand id: #months)
-		meaning: [ :args | | out |
-			out := args context stdout.
-			(1 to: 12)
-				do: [ :each | out << each asString ]
-				separatedBy: [ out space ].
-			out newLine ]
+  <commandline>
+  ^ (ClapCommand id: #months)
+    meaning: [ :commandMatch | | out |
+      out := commandMatch context stdout.
+      (1 to: 12)
+        do: [ :each | out << each asString ]
+        separatedBy: [ out space ].
+      out newLine ]
 ]]]
 
-When Clap recognizes a command, it evaluates that command's ==#meaning:== block.
-The block receives a ''match'' object which provides context on the command's invocation, like what arguments the command had, if any, but here we just needed the stream for writing to standard output.
+When Clap recognizes a command, it evaluates that command's ==#meaning:== block, passing it a ''match'' object which describes the command invocation.
+The match also provides access to contextual resources like the standard output stream.
 [[[language=shell
 > clap months
 1 2 3 4 5 6 7 8 9 10 11 12
@@ -180,53 +181,70 @@ The block receives a ''match'' object which provides context on the command's in
 
 !!!Trying a command from the workspace
 
-The first step in defining a command line application with Clap is to describe its interface.
-This is done by composing ''specification'' objects; for instance, the ==cmd== instance below describes a command with no parameters and simple behavior.
+For development convenience, we can run commands directly from the Pharo workspace.
+To try that, send the ==#activateWith:== message to our ==months== command, passing the array of words that would be typed to invoke it:
 [[[
-cmd := (ClapCommand withName: 'hello')
-  meaning: [ :args |
-    args context stdout << 'hello, clap'; lf ].
+ctx := ClapBookletMonthsCommand commandSpecification
+  activateWith: #('months').
 ]]]
 
+@@note Always pass an array of ''strings'' to ==#activateWith:==, starting with the name of the command itself.
 
-
-For development convenience, arbitrary command objects can be run from the Pharo workspace, by sending them the ==#activateWith:== message, passing the array of words that would be typed to invoke it:
+Because it's a convenience method, ==activateWith:== runs the command in a special debug context, which it then returns, so that it can be inspected.
+For instance, we can obtain the command's output as a string:
 [[[
-cmd activateWith: #('hello').
+ctx stdio stdout contents utf8Decoded
 ]]]
-
-
-Keep in mind that Clap commands are intended to be launched from a terminal.
-This is why we have to pass that array of **strings**, since that's how all shell programs receive their arguments, but also why you will not see any output inside Pharo: the text gets printed on the standard output ''of the Pharo virtual machine process''.
-
-@@note ''Launch Pharo from the terminal''. Most examples assume an interactive session, but print to the standard output. Launching Pharo from desktop environment means you would run examples blind.
-
-@@note When testing from the image a command using ==#activateWith:== make sure that you only pass strings to the array.
 
 
 !!!Specifying parameters
 
-Let's add some features to our basic command: for instance, greet an arbitrary recipient, in Esperanto, and shouting in uppercase letters:
+Let's say we want to only enumerate between two given months:
 [[[language=shell
-> clap hello -s --language EN Pharo
-SALUTON, PHARO!
+> clap months 5 10
+5 6 7 8 9 10
 ]]]
 
-Clap tries to follow common conventions, but also to keep a simple and coherent model.
-- ''Positionals'' are for passing values from an open set, for instance ==Pharo== specifies the greeting recipient; as their name implies, they are recognized from their position, but their form conveys meaning. Because of that positionals must often be parsed into some adequate domain value, like a number or an URL.
-- ''Flags'' are recognized from their form, usually beginning with dashes, in either short form like ==-s==, or long form like ==-\-shout==; a fixed set of them is acceptable, so they convey meaning through their presence, absence, number of occurrences, and order in the command line. A flag can have child positionals of its own, resulting in a named parameter, as in ==-\-language EN==. Here ==EN== is attached to the ==--language== named parameter.
-- ''Commands'' are identified by a name hello in our example. They can have positionals and flags as children parameters, but also other commands, enabling applications with rich command line syntax like ==git==.
+We modify the command specification as follows:
+[[[
+commandSpecification
+  <commandline>
+  ^ (ClapCommand id: #months)
+    add: (ClapPositional id: #start);
+    add: (ClapPositional id: #end);
+    meaning: [ :commandMatch | | out start end |
+      out := commandMatch context stdout.
+      start := (commandMatch at: #start) word asNumber.
+      end := (commandMatch at: #end) word asNumber.
+      (start to: end)
+        do: [ :each | out << each asString ]
+        separatedBy: [ out space ].
+      out newLine ]
+]]]
+
+First, we extend the command specification with two new parameters.
+We model the start and end month as positionals, each with it its own unique identifier, and add them to the command.
+
+Second, we update the command's behavior.
+The match for the whole command represents contains a smaller match for each positional; we look those up by their identifiers, and interpret the corresponding command line words as numbers.
 
 
-All parameters have a unique and mandatory ''canonical name'', which is the one expected when looking matches up.
-Aliases or convenience names supplement the canonical name; for convenience, Clap derives the short and long form of flags from their canonical name, if needed.
+!!!Positionals, flags, and commands
 
-@@note from SD to CDLM: what do you mean supplement. then we should put a ref how to define alias.
-@@note from SD to CDLM: it would be good to see the definition of clap hello -s --language eo Pharo because it is really not clear. I have no idea what is eo
+Compound parameter specifications, like our second version of the ==months== command, are composed of various kinds of parameters nested together using the ==#add:== message.
+To strike a balance between following established conventions and keeping a simple and coherent model, Clap provides three kinds of parameters, each with specific nesting, matching, and semantic properties:
 
-A ''description string'' will appear in documentation and help messages generated by Clap.
-The ''meaning'' of a parameter defines the domain value or behavior of its matches.
-Finally, compound parameters are ''composed'' from simpler ones using the ==#add:== message.
+- ''Positionals'' are recognized in order, relative to their sibling positionals, and do not have child parameters of their own; they convey meaning through the form of the word they match, once parsed into some adequate domain value, like a number or an URL.
+
+- ''Flags'' are parameters identified by keywords of a special form, differentiating them from other parameters; they convey meaning through their presence, absence, number of occurrences, and order in the command line. A flag can have child positionals, resulting in a named parameter.
+
+- ''Commands'' are identified by keywords. They can have positionals and flags as children parameters, but also other commands, which helps with structuring applications into multiple subcommands. Sibling commands are exclusive, and a subcommand takes precedence over its parent command.
+
+Clap produces matches associating each word of the command line with a parameter of the command specification; the nesting of matches mirrors the nesting of specifications.
+All parameters have a mandatory ''identifier'', unique among sibling parameters, used in the implementation for querying and navigating matches.
+
+Besides their identifier, Clap parameters also have a ''name'' and a ''description string'' which are how the user knows them; for convenience, if no name is given, Clap derives it from the identifier.
+Name and description also appear in generated documentation and help messages.
 
 
 !!!Positional parameters
