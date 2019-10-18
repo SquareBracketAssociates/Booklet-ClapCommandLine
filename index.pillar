@@ -9,7 +9,7 @@ In this book, all examples assume that Pharo runs under a unix-like operating sy
 A command line application consists of a single command or of several related commands designed to be used either interactively from a shell, or programmatically in shell scripts.
 Clap supports applications with rich command line syntax, supporting positional parameters, flags or options, and even nested subcommands like ==git==; it also tries to follow well-established conventions like short and long alternative syntaxes for flags.
 
-The example below show two different uses of the standard ==seq== shell command, which generates numeric sequences:
+The example below shows two different uses of the standard ==seq== shell command, which generates numeric sequences:
 [[[language=shell
 > seq 3
 1
