@@ -226,7 +226,7 @@ First, we extend the command specification with two new parameters.
 We model the start and end month as positionals, each with it its own unique identifier, and add them to the command.
 
 Second, we update the command's behavior.
-The match for the whole command represents contains a smaller match for each positional; we look those up by their identifiers, and interpret the corresponding command line words as numbers.
+The match for the whole command  contains a smaller match for each positional; we look those up by their identifiers, and interpret the corresponding command line words as numbers.
 
 
 !!!Positionals, flags, and commands
