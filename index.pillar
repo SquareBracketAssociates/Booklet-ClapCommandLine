@@ -252,10 +252,11 @@ Name and description also appear in generated documentation and help messages.
 
 !!!Positional parameters
 
-Positionals are the simplest form of parameters; successive sibling positionals are recognized in order, each matching a word from the command line.
+Positionals are for passing values from an open-ended set, like numbers, URLs, file paths, application-specific identifiers, arbitrary strings… any information that the user would literally write on the command line.
 
-Positionals are for passing values from an open-ended set, like numbers, URLs, file paths, application-specific identifiers, arbitrary strings…
-The application is responsible for parsing the matched word into a proper domain value, and the user needs to remember the correct sequence between values and, to pay attention to the word-splitting rules of their shell and use quotes appropriately.
+Positionals are the simplest form of parameters; successive sibling positionals are recognized in order, each matching a word from the command line.
+When writing the command line, the user must remember the correct sequence between successive arguments, and must ensure that each positional value is considered as one word by the shell: for instance, if the argument contains spaces or results from expanding shell variables, they have to pay attention to the shell's word-splitting rules and use quotes appropriately.
+The application is then responsible for parsing the word matched by the positional into a proper domain value.
 
 In our ==months== command, we used positionals for the start and end month.
 The order in which we add them to their parent command determines the matching order, so the first argument will always be ==start== and the second one ==end==.
@@ -265,29 +266,28 @@ At this point, both arguments are just two strings, so the application parses th
 !!!Handling missing arguments
 
 By adding parameters, we have made the command quite brittle: what if the user omits one or both arguments, expecting the command to work like the initial version?
-Well, in both cases, Clap fails.
+Well, it is the responsibility of the application to handle missing arguments in a robust manner.
+Failing that, Clap fails:
 [[[language=shell
 > clap months 3
 MessageNotUnderstood: ClapImplicit>>word
 ]]]
 
-This is to be expected; it is the responsibility of the application to handle this case in a robust manner.
-The first problem is in the way we used the matches:
+Here's why: when either positional is omitted, the ==#at:== query returns an ''implicit match'' (see the *Null Object pattern>https://en.wikipedia.org/wiki/Null_object_pattern*).
+Sending ==#word== was thus the mistake here, because this is only valid when the parameter ''explicitly matched'' a word from the command line.
 [[[
 start := (commandMatch at: #start) word asNumber.
 end := (commandMatch at: #end) word asNumber.
 ]]]
-By sending ==#word== to the matches for ==start== and ==end==, we assumed they would be ''explicit matches'', meaning they correspond to an actual word of the command line.
-However, if the positionals were omitted, there is no such word, and the query returns an ''implicit match''.
 
-There are several possible approaches here; we could use a query with a fallback like ==#at:ifPresent:ifAbsent:==:
+Instead, we could use a query like ==#at:ifPresent:ifAbsent:== which has a fallback when no explicit match is found.
 [[[
 start := commandMatch at: #start
-    ifPresent: [ :m | m word asNumber ]
-    ifAbsent: [ 1 ].
+  ifPresent: [ :m | m word asNumber ]
+  ifAbsent: [ 1 ].
 end := commandMatch at: #end
-    ifPresent: [ :m | m word asNumber ]
-    ifAbsent: [ 12 ].
+  ifPresent: [ :m | m word asNumber ]
+  ifAbsent: [ 12 ].
 ]]]
 
 [[[language=shell
@@ -297,7 +297,31 @@ end := commandMatch at: #end
 1 2 3 4 5 6 7 8 9 10 11 12
 ]]]
 
-This approach does work but you can see how the code for the command is starting to take care of a lot of details that should really be under the responsibility of the parameters themselves.
+This approach does work, but the command's meaning block is becoming tedious to read, because it has to bother with details that are really the responsibility of the parameters themselves.
+
+A better approach is to give each parameter its own ''meaning''; then the command code does not have to care and can just ask parameter matches for their ==value==.
+When asking for the value of an explicit match, the meaning block of the parameter will be used.
+But if the user left the argument out, then an ''implicit meaning'', given by a different block, should be used:
+[[[
+commandSpecification
+  <commandline>
+  ^ (ClapCommand id: #months)
+    add: ((ClapPositional id: #start)
+      meaning: [ :m | m word asNumber ];
+      implicitMeaning: [ 1 ]);
+    add: ((ClapPositional id: #end)
+      meaning: [ :m | m word asNumber ];
+      implicitMeaning: [ 12 ]);
+    meaning: [ :commandMatch | | out start end |
+      out := commandMatch context stdout.
+      start := (commandMatch at: #start) value.
+      end := (commandMatch at: #end) value.
+      (start to: end)
+        do: [ :each | out << each asString ]
+        separatedBy: [ out space ].
+      out newLine ]
+]]]
+
 
 !!!Argument validation
 
