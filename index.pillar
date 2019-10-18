@@ -265,7 +265,7 @@ At this point, both arguments are just two strings, so the application parses th
 !!!Handling missing arguments
 
 By adding parameters, we have made the command quite brittle: what if the user omits one or both arguments, expecting the command to work like the initial version?
-Well, in both cases, Clap fails. :
+Well, in both cases, Clap fails.
 [[[language=shell
 > clap months 3
 MessageNotUnderstood: ClapImplicit>>word
