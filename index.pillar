@@ -242,9 +242,10 @@ To strike a balance between following established conventions and keeping a simp
 
 @@note TODO example here
 
-When Clap runs, it traverses the command specification, associating each word of the command line with the matching parameter; the nesting of matches therefore mirrors the nesting of specifications.
-The application starts with the meaning block of the innermost subcommand; it needs to navigate and query the match tree to determine its course.
-To this end, all parameters have a mandatory ''identifier'', which is unique among sibling parameters.
+Clap starts running application code with the meaning block of the innermost subcommand invoked.
+The application receives a match tree associating each word of the command line with the matched parameter; the nesting of matches therefore mirrors the nesting of specifications.
+
+The application then determines its course by navigating and querying the match tree; to this end, all parameters have a mandatory ''identifier'', which is unique among sibling parameters.
 
 Besides their identifier, Clap parameters also have a ''name'' and a ''description string'' which are how the user knows them; for convenience, if no name is given, Clap derives it from the identifier.
 Name and description also appear in generated documentation and help messages.
