@@ -300,7 +300,7 @@ end := commandMatch at: #end
 
 This approach does work, but the command's meaning block is becoming tedious to read, because it has to bother with details that are really the responsibility of the parameters themselves.
 
-A better approach is to give each parameter its own ''meaning''; then the command code does not have to care and can just ask parameter matches for their ==value==.
+A better approach is to give each parameter its own ''meaning''; then the command code does not have to care and can just ask parameter matches for their ==#value==.
 When asking for the value of an explicit match, the meaning block of the parameter will be used.
 But if the user left the argument out, then an ''implicit meaning'', given by a different block, should be used:
 [[[
@@ -323,121 +323,30 @@ commandSpecification
       out newLine ]
 ]]]
 
-
-!!!Argument validation
-
-@@note TODO
-
-There is another way our command could fail: if the user types something that cannot be properly parsed into a number.
+@@note There is another way our command could fail: if the user types something that cannot be properly parsed into a number, then ==#asNumber== will fail. We have left error handling out of examples for now, but in a future version Clap could provide facilities for argument validation and related error reporting.
 
 
-Let's extend the ==hello== command with a positional which specifies the recipient of the greeting.
-To do this we make an instance of ==ClapPositional==, naming it ==who==, then we add it as a child to the command, and finally we extend the command's meaning block to use the new argument.
-Note that a positional may be not given in such case we specify a default value using the message ==#implicitMeaning:==.
+!!! Quick recap on parameters and matches
 
-[[[
-ClapBookletHelloExample class >> helloClap
-  <commandline>
-  ^ (ClapCommand withName: 'hello')
-    add: ((ClapPositional withName: 'who')
-      implicitMeaning: [ 'world' ]);
-    meaning: [ :args |
-      args context stdout
-        << 'hello, ' ;
-        << (args atName: 'who') value ;
-        lf ]
-]]]
+@@note TODO should go after flags/commands
 
+An essential point is that Clap receives command lines as ''arrays of strings''; any command line gets processed and split into ''words'' by a shell, whether it was interactively entered at a command prompt, or it was passed to the ==system()== POSIX function, but is not structured further. This is why we have to interpret concrete arguments into domain values.
 
-We now have a parameterized greeting:
+Given a parameter match, the ==#word== message returns its concrete representation as a string.
+Clap assumes that the command line is UTF-8, but also provides lower-level accessors for other encodings or raw access to the byte representation.
 
-[[[language=shell
-> clap hello Pharo
-hello, Pharo
-]]]
+Conversely, ==#value== interprets the match into a domain value, according to the parameter's ''meaning''.
+Positionals, flags, and commands all have a meaning specified by a block passed to the ==#meaning:== message.
+The meaning is often a simple conversion, but is limited to that; one parameter can depend on others, in fact, for commands, it defines their complete behavior.
 
-[[[language=shell
-> clap hello
-hello, world
-]]]
+Matches form a tree, their nesting mirroring the nesting of parameter specification.
+From any match, we can navigate up to its ==#parent== match, or directly to the invocation ==#context== which is the root of the match tree.
+Navigating down requires querying for a child match by identifier, either using branching queries like ==#at:ifPresent:==, or collective queries like ==#occurrencesOf:==.
+These queries all return ''explicit'' matches, which represents a span of one or several words of the command line.
 
-
-!!!! What did we learn
-
-The message ==#implicitMeaning:== provides the default value of the positionable when it is not given.
-The messages ==#implicitMeaning:== as well as ==#meaning:== both expect a block as argument.
-Also notice how the positionable argument is accessed from the method ==#meaning:== message via the message ==#atName:==.
-
-
-!!! Playing more with positionals
-
-Let us have fun with positional. Imagine that we want to have a simple command enumerating
-consecutive period of the year as months.
-
-[[[
-> clap months 2 5
-Counting, 2 3 4 5
-]]]
-
-
-[[[
-> clap months
-Counting, 1 2 3 4 5 6 7 8 9 10 11 12
-]]]
-
-We can define the command as follows:
-
-[[[
-myCounter
-  <commandline>
-  ^ (ClapCommand withName: 'months')
-    	add: ((ClapPositional withName: 'from') implicitMeaning: [ 1 ]);
-	 	add: ((ClapPositional withName: 'to') implicitMeaning: [ 12 ]);
-    meaning: [ :args |
-		| start end |
-		start := (args atName: 'from') value asNumber.
-		end := (args atName: 'to') value asNumber.
-		args context stdout
-			<< 'Counting, '.
-		start to: end  do: [ :each | args context stdout << each asString ; space ]
-		]
-]]]
-
-What we see is that positionals are read in sequence.
-
-[[[
-> clap months 5
-Counting months, 5 6 7 8 9 10 11 12
-]]]
-
-An important point to consider is that the values that we get from the command line are strings.
-This is why we have to convert them to the objects we want.
-Here we convert the month index into numbers so that we can iterate between them.
-
-A better way is to use the ==#meaning:== message of a particular positional to specify the conversion.
-Here we rewrite the command to show you the effect
-
-[[[
-myCounter
-	<commandline>
-	^ (ClapCommand withName: 'bettermonths')
-		add: ((ClapPositional withName: 'from')
-				meaning: [ :pos | pos word asNumber ];
-				implicitMeaning: [ 1 ]);
-		add: ((ClapPositional withName: 'to')
-				meaning: [ :pos | pos word asNumber ];
-				implicitMeaning: [ 12 ]);
-		meaning: [ :args |
-			| start end |
-			start := (args atName: 'from') value.
-			end := (args atName: 'to') value.
-			args context stdout
-				<< 'Counting, '.
-			start to: end  do: [ :each | args context stdout << each asString ; space ]
-		]
-]]]
-
-But a better way to define the behavior is to follow the pattern presented in Section.
+The short query ==#at:== always answers a meaningful object, unless we're asking for an invalid parameter.
+When the requested parameter has no occurrence in the command line, ==#at:== returns an ''implicit'' match.
+The message ==#implicitMeaning:== of parameter specifications provides an alternate to the ==#meaning:== block for this situation, guaranteeing that the normal meaning block will always be passed explicit match objects.
 
 
 !!! Multiple times the same positionable
