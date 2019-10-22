@@ -326,29 +326,6 @@ commandSpecification
 @@note There is another way our command could fail: if the user types something that cannot be properly parsed into a number, then ==#asNumber== will fail. We have left error handling out of examples for now, but in a future version Clap could provide facilities for argument validation and related error reporting.
 
 
-!!! Quick recap on parameters and matches
-
-@@note TODO should go after flags/commands
-
-An essential point is that Clap receives command lines as ''arrays of strings''; any command line gets processed and split into ''words'' by a shell, whether it was interactively entered at a command prompt, or it was passed to the ==system()== POSIX function, but is not structured further. This is why we have to interpret concrete arguments into domain values.
-
-Given a parameter match, the ==#word== message returns its concrete representation as a string.
-Clap assumes that the command line is UTF-8, but also provides lower-level accessors for other encodings or raw access to the byte representation.
-
-Conversely, ==#value== interprets the match into a domain value, according to the parameter's ''meaning''.
-Positionals, flags, and commands all have a meaning specified by a block passed to the ==#meaning:== message.
-The meaning is often a simple conversion, but is limited to that; one parameter can depend on others, in fact, for commands, it defines their complete behavior.
-
-Matches form a tree, their nesting mirroring the nesting of parameter specification.
-From any match, we can navigate up to its ==#parent== match, or directly to the invocation ==#context== which is the root of the match tree.
-Navigating down requires querying for a child match by identifier, either using branching queries like ==#at:ifPresent:==, or collective queries like ==#occurrencesOf:==.
-These queries all return ''explicit'' matches, which represents a span of one or several words of the command line.
-
-The short query ==#at:== always answers a meaningful object, unless we're asking for an invalid parameter.
-When the requested parameter has no occurrence in the command line, ==#at:== returns an ''implicit'' match.
-The message ==#implicitMeaning:== of parameter specifications provides an alternate to the ==#meaning:== block for this situation, guaranteeing that the normal meaning block will always be passed explicit match objects.
-
-
 !!! Multiple times the same positionable
 
 from SD to CDLM: more here
@@ -404,33 +381,6 @@ tu peux toujours faire ==aFlagMatch isExplicit== pour savoir si il était prése
 mais aFlagMatch value fait la même chose si tu ne lui as pas donné de meaning
 
 
-!!!Exit success
-
-[[[
-meaning: [ :args |
-			args exitSuccess
-				]
-]]]
-
-Usually we do not have to do it since when the block is fully executed an exitSuccess is raised
-
-[[[
-meaning: [ :args |
-			args exitFailure
-				]
-]]]
-
-status one
-
-[[[
-meaning: [ :args |
-			args exitFailure:
-				]
-]]]
-
-status one
-
-
 !!!Commands and subcommands
 
 Reoops!
@@ -459,6 +409,54 @@ et je veux dump qui fait un dump donc comme sous commande?
 quittance —baseDirectory /tmp -dump
 
 ]]]
+
+
+!!! Quick recap on parameters and matches
+
+An essential premise is that Clap receives command lines as ''arrays of strings''; any command line gets processed and split into ''words'' by a shell, whether it was interactively entered at a command prompt, or it was passed to the ==system()== POSIX function, but is not structured further. This is why we have to interpret concrete arguments into domain values.
+
+Given a parameter match, the ==#word== message returns its concrete representation as a string.
+Clap assumes that the command line is UTF-8, but also provides lower-level accessors for other encodings or raw access to the byte representation.
+
+Conversely, ==#value== interprets the match into a domain value, according to the parameter's ''meaning''.
+Positionals, flags, and commands all have a meaning specified by a block passed to the ==#meaning:== message.
+The meaning is often a simple conversion, but is limited to that; one parameter can depend on others, in fact, for commands, it defines their complete behavior.
+
+Parameter matches form a tree.
+We can navigate up to the ==#parent== of any match, or directly to the invocation ==#context== which is the root of the match tree.
+Navigating down requires querying for a child match by identifier, either using branching queries like ==#at:ifPresent:==, or collective queries like ==#occurrencesOf:==.
+These queries all return ''explicit'' matches, which represents a span of one or several words of the command line.
+
+The short query ==#at:== always answers a meaningful object, unless we're asking for an invalid parameter.
+When the requested parameter has no occurrence in the command line, ==#at:== returns an ''implicit'' match.
+The message ==#implicitMeaning:== of parameter specifications provides an alternate to the ==#meaning:== block for this situation, guaranteeing that the normal meaning block will always be passed explicit match objects.
+
+
+!!!Exit status
+
+[[[
+meaning: [ :args |
+			args exitSuccess
+				]
+]]]
+
+Usually we do not have to do it since when the block is fully executed an exitSuccess is raised
+
+[[[
+meaning: [ :args |
+			args exitFailure
+				]
+]]]
+
+status one
+
+[[[
+meaning: [ :args |
+			args exitFailure:
+				]
+]]]
+
+status one
 
 
 !!! Free help
