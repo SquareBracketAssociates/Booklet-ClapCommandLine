@@ -326,20 +326,49 @@ commandSpecification
 @@note There is another way our command could fail: if the user types something that cannot be properly parsed into a number, then ==#asNumber== will fail. We have left error handling out of examples for now, but in a future version Clap could provide facilities for argument validation and related error reporting.
 
 
-!!! Multiple times the same positionable
+!!! Positionals with multiple occurrences
 
-from SD to CDLM: more here
+As you might have guessed, the ==months== command we are using as a running example is inspired from the unix ==seq== command for generating number sequences; indeed, they behave the same with both bounds specified.
+However, when they're only given one bound, ==months== treats it as the number to count ''from'', while ==seq== counts ''up to'' it starting from one.
+To make matters worse, ==seq== also accepts three arguments, in which case the middle one is an increment, much like the ==#to:by:do:== iteration method.
+
+Clap recognizes positional in order, which means that subsequent positionals have lower and lower precedence.
+In contrast, precedence in ==seq== does not match order: it needs an upper bound most (its third positional), possibly preceded by a lower bound (first positional), and then maybe with an increment in between (second positional).
+This means in practice that the first argument to ==seq== changes meaning depending on how many other arguments follow.
+
+If we want to reproduce the way ==seq== handles positionals, we have to take a different approach.
+We can treat the arguments as ''multiple occurrences'' of a single positional, which we can access as a collection and analyse using arbitrary logic:
 [[[
-ClapCommandLineExamples>>recipients
-	^ (arguments at: #who) allOccurrencesCollect: [ :arg | arg value: self ]
+seqSpecification
+  <commandline>
+  ^ (ClapCommand id: #'months-seq')
+    add: ((ClapPositional id: #bound)
+      multiple: true;
+      meaning: [ :m | m word asNumber ]);
+    meaning: [ :commandMatch | | out bounds start step end |
+      out := commandMatch context stdout.
+      bounds := (commandMatch occurrencesOf: #bound) collect: #value.
+      end := bounds size >= 1
+        ifTrue: [ bounds last ] ifFalse: [ 12 ].
+      start := bounds size >= 2
+        ifTrue: [ bounds first ] ifFalse: [ 1 ].
+      step := bounds size >= 3
+        ifTrue: [ bounds second ] ifFalse: [ 1 ].
+      (start to: end by: step)
+        do: [ :each | out << each asString ]
+        separatedBy: [ out space ].
+      out newLine ]
 ]]]
 
-
-[[[
-> clap hello foo bar baz
-hello, foo.
-hello, bar.
-hello, baz.
+Note that we've declared this version of the command as a new method and with a different identifier.
+This leaves ==months== unchanged, but adds a new ==months-seq== which you can try for comparison:
+[[[language=shell
+> clap months-seq 3
+1 2 3
+> clap months-seq 3 7
+3 4 5 6 7
+> clap months-seq 3 2 7
+3 5 7
 ]]]
 
 
