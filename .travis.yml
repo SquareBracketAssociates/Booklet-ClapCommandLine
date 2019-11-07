@@ -11,15 +11,17 @@ smalltalk:
 # Integration tests test that pillar itself can interact with generated files, pdf generation, etc.
 # System tests test that we can install and use pillar as a black box
 env:
+  global:
+    - TEXLIVE_RELEASE=2019
+    - TEXLIVE_MIRROR=http://mirror.ctan.org/systems/texlive/tlnet
   matrix:
   - JOB=test TYPE=System ARCHETYPE=book OUTPUT=pdf
 
 install:
-  # install Pillar (under ./build)
   - git clone https://github.com/pillar-markup/pillar.git -b dev-7
-  - cd pillar && ./scripts/build.sh && cd ..
-  - . pillar/scripts/ci/ensure_latex.sh
-  - ./pillar/scripts/ci/ensure_book_dependencies.sh
+  - ./pillar/scripts/build.sh
+  - source pillar/scripts/ci/support.sh && install-texlive
+  - source _support/latex/ensure-deps.sh
 
 script:
   - ./pillar/build/pillar build pdf
