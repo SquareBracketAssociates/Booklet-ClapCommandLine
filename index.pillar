@@ -102,9 +102,9 @@ A single Pharo image can host several Clap commands; in fact the base image incl
 Loading additional commands into an image is as simple as loading the corresponding packages; Clap discovers declared commands automatically.
 
 However, either when loading commands in an image, installing them on your own system, or packaging them for other users to install, you will have to consider a few gotchas:
-- Two commands installed in a common image cannot have the same name.
+- Commands installed in a common image must all have distinct names.
 - The wrapper script for a command must know which image to run and with which VM; if one or the other are known by relative path, then the working directory matters.
-- Commands can modify their host image, inducing side-effects between successive runs or between independent commands hosted in a common image.
+- Commands can modify their host image, inducing side-effects between successive runs or between commands hosted in a common image.
 We do not have generic answers to those questions but we are interested in your feedback.
 
 
