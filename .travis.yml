@@ -14,7 +14,7 @@ env:
   global:
     - TEXLIVE_RELEASE=2019
     - TEXLIVE_MIRROR=http://mirror.ctan.org/systems/texlive/tlnet
-    - PATH="$HOME/texlive/bin/x86_64-linux:$PWD/pillar/build:$PATH"
+    - PATH="$HOME/texlive/bin/x86_64-linux:$PWD/build:$PATH"
   matrix:
   - JOB=test TYPE=System ARCHETYPE=book OUTPUT=pdf
 
@@ -25,14 +25,7 @@ install:
   - ./pillar/scripts/build.sh
 
 script:
-  - env
-  - pwd
-  - ls -la $HOME/bin
-  - ls -la $HOME/build
-  - ls -la $HOME/builds
-  - cat $HOME/.travis/functions
-  - cat $HOME/build.sh
-  - PATH="$HOME/texlive/bin/x86_64-linux:$PWD/pillar/build:$PATH" pillar build pdf
+  - pillar build pdf
 
 after_success:
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
