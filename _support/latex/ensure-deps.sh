@@ -1,15 +1,16 @@
 #!/bin/bash
 
-tlmgr install fira
-tlmgr install gentium-tug
-tlmgr install opensans
+xargs tlmgr install <<DEPS
+    fira
+    gentium-tug
+    opensans
 
-tlmgr install varwidth
-tlmgr install footmisc
-tlmgr install tcolorbox
-tlmgr install environ
-tlmgr install trimspaces
-tlmgr install ctablestack
-tlmgr install import
-tlmgr install multirow
-tlmgr install iftex
+    varwidth
+    footmisc
+    tcolorbox
+    environ
+    trimspaces
+    ctablestack
+    import
+    multirow
+DEPS
