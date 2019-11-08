@@ -1,16 +1,27 @@
 #!/bin/bash
 
 xargs tlmgr install <<DEPS
-    fira
-    gentium-tug
-    opensans
-
-    varwidth
-    footmisc
-    tcolorbox
-    environ
-    trimspaces
     ctablestack
+    environ
+    filehook
+    fira
+    fontspec
+    footmisc
+    gentium-tug
+    graphics
     import
+    listings
+    luatexbase
+    memoir
     multirow
+    opensans
+    pgf
+    polyglossia
+    ragged2e
+    tcolorbox
+    tools
+    trimspaces
+    ulem
+    varwidth
+    xcolor
 DEPS
