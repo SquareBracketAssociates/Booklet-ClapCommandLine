@@ -25,32 +25,40 @@ The example below shows two different uses of the standard ==seq== shell command
 !!!Pharo from the command line
 
 To follow along the examples in this book, you will need to make Pharo available from the command line.
-The easiest way is to install a standalone Pharo as described at *https://www.pharo.org/download#standalone*, instead of using Pharo Launcher.
-
-The following instructions install a suitable virtual machine.
 This assumes that the directory ==~/bin== is already in your ==$PATH==; feel free to pick someplace else but make sure to adapt your shell configuration accordingly.
+
+First, install a Pharo8 image.
+
 [[[language=shell
 > cd ~/bin
+> curl https://get.pharo.org/64/80 | bash
+]]]
+
+Then you install a suitable virtual machine to load your image.
+[[[language=shell
 > curl https://get.pharo.org/64/vm80 | bash
 ]]]
 
 The virtual machine comes with two executable wrapper scripts.
 To open an image with its graphical user interface active, run it with ==pharo-ui==:
 [[[language=shell
-> pharo-ui Pharo8.image
+> pharo-ui Pharo.image
 ]]]
+
+Once you are on virtual machine's interface, import and load this package to make sure you get proper classes and methods.
+Follow this link to get the package : *https://github.com/cdlm/clap-st*
 
 Conversely, ==pharo== runs the image ''headless'', which is what we will use with Clap; note that in the absence of arguments, the image immediately quits with a help message:
 [[[language=shell
-> pharo Pharo8.image
+> pharo Pharo.image
 ]]]
 
 To run Clap commands, follow the image name with the ==clap== keyword, then the command itself.
 Clap comes with the traditional ''"hello world"'' as an example, if you want to try it:
 [[[language=shell
-> pharo Pharo8.image clap hello
+> pharo Pharo.image clap hello
 hello, world.
-> pharo Pharo8.image clap hello "pharo and clap"
+> pharo Pharo.image clap hello "pharo and clap"
 hello, pharo and clap.
 ]]]
 
@@ -71,30 +79,6 @@ We could also define a direct shell alias to the ==hello== command:
 > hello
 hello, world.
 ]]]
-
-However, while aliases make fine shortcuts, they are usually limited to interactive use, as a personal convenience feature.
-To deploy a Clap command in the system's ==$PATH==, a wrapper shell script is good solution;
-make such a script executable, place it under your ==$PATH==, ''et voilà !''
-You now have a shell program implemented in Pharo!
-[[[language=bash
-#!/bin/bash
-exec pharo Pharo8.image clap "$@"
-]]]
-
-Alternatively, functions provide a more scoped abstraction:
-[[[language=bash
-#!/bin/bash
-function clap() { pharo Pharo8.image clap "$@"; }
-function hello() { clap hello "$@"; }
-# and later, in the script's body...
-hello
-]]]
-
-Note that =="$@"== passes all function arguments unchanged to the callee, as if they were ''individually'' quoted.
-Please consult your shell's documentation for further enlightenment on shell semantics and for advice on best practices.
-
-@@note From this point on, we will use the ==clap== shortcut defined above. Since both the alias and the script provide the same syntax, either is fine; however, pay attention that the image name is correct, and, unless it's an absolute path to the image file, that your shell session is in the correct working directory.
-
 
 !!!Deploying Clap commands
 
@@ -118,11 +102,12 @@ Through simple examples, this chapter shows how to specify the syntax and behavi
 Clap relies on a simple convention for registering commands: any class-side unary method with the ==<commandline>== pragma is a factory method that returns the specification of a unique command.
 
 As a first example, let's build a command that enumerates the months in the year.
-We start with a new empty class:
+First, we create a new package called ==Clap-BookletExamples==.
+Then we start with a new empty class:
 [[[
 Object subclass: #ClapBookletMonthsCommand
-  slots: {}
-  classVariables: {  }
+  instanceVariableNames: ''
+  classVariableNames: ''
   package: 'Clap-BookletExamples'
 ]]]
 
@@ -137,12 +122,18 @@ ClapBookletMonthsCommand class >> commandSpecification
 
 After saving the image, switch to a terminal window and try either the explicit or the short version:
 [[[language=shell
-> pharo Pharo8.image clap months
+> pharo Pharo.image clap months
 > clap months
 ]]]
 
 Of course, since we have not given any behavior to the command yet, you should not see any output.
 However, Clap takes care of terminating the execution with an exit status of zero, indicating success.
+
+To print this success output:
+[[[language=shell
+> echo "exit status was $?"
+exit status was 0
+]]]
 
 If you try a command or parameters that do not exist, mistype the name, or forget to save the image after declaring the command, the exit status should be nonzero, indicating that the command failed, and you should get an error message:
 [[[language=shell
@@ -203,6 +194,13 @@ Let's say we want to only enumerate between two given months:
 [[[language=shell
 > clap months 5 10
 5 6 7 8 9 10
+]]]
+
+Or if you are in the Pharo workspace, you can print from the playground the following lines:
+[[[
+ctx := ClapBookletMonthsCommand commandSpecification
+  activateWith: #('months' '5' '10').
+ctx stdio stdout contents utf8Decoded
 ]]]
 
 We modify the command specification as follows:
@@ -296,6 +294,13 @@ end := commandMatch at: #end
 10 11 12
 > clap months
 1 2 3 4 5 6 7 8 9 10 11 12
+]]]
+
+Or in the Pharo workspace :
+[[[
+ctx := ClapBookletMonthsCommand commandSpecification
+  activateWith: #('months' '10').
+ctx stdio stdout contents utf8Decoded
 ]]]
 
 This approach does work, but the command's meaning block is becoming tedious to read, because it has to bother with details that are really the responsibility of the parameters themselves.
@@ -471,8 +476,7 @@ flag help et command help
 
 Create a text based on the command elements (positionables,.... )
 [[[
-clap hello --help
->
+>clap hello --help
 
 > clap eval --help
 ]]]
@@ -517,7 +521,7 @@ hello
 
 A command help also exists. It documents either the commands available or let you specify the one you want.
 [[[
-pharo80 P8Indian.image clap help
+> clap help
 Entry point for commands implemented with Clap
 
 Usage: clap [--help]
@@ -534,7 +538,7 @@ Commands:
 ]]]
 
 [[[
-pharo80 P8Indian.image clap help hello
+> clap help hello
 Provides greetings
 
 Usage: hello [--help] [--whisper] [--shout] [--language] [<who>]
