@@ -1,6 +1,8 @@
 !!Before we start
 
 Clap is the new library for implementing ''command line applications'' in Pharo.
+The project is hosted at *https://github.com/cdlm/clap-st*.
+
 In this book, all examples assume that Pharo runs under a unix-like operating system (macOS or Linux).
 
 
@@ -22,75 +24,50 @@ The example below shows two different uses of the standard ==seq== shell command
 @@note In this book, code blocks show either the recording of a shell session, as above, or pieces of Pharo code, which you will recognize from the syntax. In shell sessions, lines starting with ==>== represent the command prompt followed by a command entered at that point; subsequent lines, up to the next prompt, show the output of that command.
 
 
-!!!Pharo from the command line
+!!!Install Pharo and Clap from the command line
 
-To follow along the examples in this book, you will need to make Pharo available from the command line.
-This assumes that the directory ==~/bin== is already in your ==$PATH==; feel free to pick someplace else but make sure to adapt your shell configuration accordingly.
-
-First, install a Pharo8 image.
-
+To get a working setup, the easiest is to obtain both the Pharo virtual machine and image via the *command line method>https://pharo.org/download#standalone*:
 [[[language=shell
-> cd ~/bin
-> curl https://get.pharo.org/64/80 | bash
+> curl https://get.pharo.org/64/80+vm | bash
 ]]]
 
-Then you install a suitable virtual machine to load your image.
+The virtual machine comes with two launcher scripts.
+To open an image with its graphical user interface active, use ==pharo-ui==:
 [[[language=shell
-> curl https://get.pharo.org/64/vm80 | bash
+> ./pharo-ui Pharo.image
 ]]]
 
-The virtual machine comes with two executable wrapper scripts.
-To open an image with its graphical user interface active, run it with ==pharo-ui==:
-[[[language=shell
-> pharo-ui Pharo.image
+While the image is open, let's load an up-to-date version of Clap in it; open a workspace and evaluate the following incantation:
+[[[
+Metacello new baseline: 'Clap';
+  repository: 'github://cdlm/clap-st/src';
+  ignoreImage;
+  load.
 ]]]
+If all went well, save and quit the image.
 
-Once you are on virtual machine's interface, import and load this package to make sure you get proper classes and methods.
-Follow this link to get the package : *https://github.com/cdlm/clap-st*
-
-Conversely, ==pharo== runs the image ''headless'', which is what we will use with Clap; note that in the absence of arguments, the image immediately quits with a help message:
-[[[language=shell
-> pharo Pharo.image
-]]]
-
+The other launcher script ==pharo== runs the image ''headless'', which is what we will use to try Clap commands from the shell.
 To run Clap commands, follow the image name with the ==clap== keyword, then the command itself.
 Clap comes with the traditional ''"hello world"'' as an example, if you want to try it:
 [[[language=shell
-> pharo Pharo.image clap hello
+> ./pharo Pharo.image clap hello
 hello, world.
-> pharo Pharo.image clap hello "pharo and clap"
+> ./pharo Pharo.image clap hello "pharo and clap"
 hello, pharo and clap.
 ]]]
 
 
-!!!Shell tricks for convenience
+!!!Define a shell alias for convenience
 
-You will certainly find that repeating the virtual machine and image names before each and every command is a little tedious.
-To make this more convenient, we advise that you define the following shell alias, which makes ==clap== look more like an actual shell command:
+From this point on, we will use a ==clap== shortcut which ''looks'' like an actual shell command.
+For now, let's define it as a shell alias, like so:
 [[[language=shell
-> alias clap='pharo Pharo8.image clap'
+> alias clap='./pharo Pharo.image clap'
 > clap hello
 hello, world.
 ]]]
 
-We could also define a direct shell alias to the ==hello== command:
-[[[language=shell
-> alias hello='pharo Pharo8.image clap hello'
-> hello
-hello, world.
-]]]
-
-
-!!!Deploying Clap commands
-
-A single Pharo image can host several Clap commands; in fact the base image includes commands for automating development tasks like loading code or running tests.
-Loading additional commands into an image is as simple as loading the corresponding packages; Clap discovers declared commands automatically.
-
-However, either when loading commands in an image, installing them on your own system, or packaging them for other users to install, you will have to consider a few gotchas:
-- Commands installed in a common image must all have distinct names.
-- The wrapper script for a command must know which image to run and with which VM; if one or the other are known by relative path, then the working directory matters.
-- Commands can modify their host image, inducing side-effects between successive runs or between commands hosted in a common image.
-We do not have generic answers to those questions but we are interested in your feedback.
+@@note This alias is just a quick and dirty way to set up a shell session and to follow along this tutorial. It's very brittle because it relies on the image and virtual machine being installed in your shell's current working directory, and you will have to define it again in new shell sessions. See Section *@deploying* for a proper deployment approach.
 
 
 !!Clap by Example
@@ -468,14 +445,14 @@ meaning: [ :args |
 status one
 
 
-!!! Free help
+!!! Get help for free
 
 flag help et command help
 
 
-!!!! flag help
+!!!! Help flag
 
-Passing ==\-\-help== to a command that supports it shows the help text describing the command and its parameters:
+Passing ==\-\-help== to a command that supports it describes the command and its parameters:
 [[[
 > clap hello --help
 Provides greetings
@@ -508,7 +485,7 @@ Options:
                 Keep image running
 ]]]
 
-Pay attention: usually, ==\-\-help== takes precedence over other arguments.
+Pay attention: by convention, ==\-\-help== takes precedence over other arguments.
 However, in Clap, flags do not automatically trigger behavior.
 This makes it necessary to check for it as one of the first things the command does.
 [[[
@@ -528,9 +505,10 @@ hello
 ]]]
 
 
-!!!! Command help
+!!!! Help command
 
-A command help also exists. It documents either the commands available or let you specify the one you want.
+Clap also provides a ==help== command.
+Without an argument, it works like the ==\-\-help== flag and documents its parent command:
 [[[
 > clap help
 Entry point for commands implemented with Clap
@@ -548,6 +526,7 @@ Commands:
     bettermonths
 ]]]
 
+With an argument it documents the corresponding sibling command:
 [[[
 > clap help hello
 Provides greetings
@@ -564,6 +543,9 @@ Options:
     --language
                 Select language of greeting
 ]]]
+
+
+!! Patterns of command definition
 
 
 !!! Command vs. flag
@@ -585,9 +567,6 @@ Potential Conflict with positional
 > clap hello help
 Hello, help
 ]]]
-
-
-!! Patterns of command definition
 
 
 !!! Patterns to express meaning
@@ -645,4 +624,14 @@ Before we start with the details, let's recap the general workflow with Clap:
 +Context and tree of matches>file://figures/parameters/tree.pdf|width=70|label=matchTree+
 
 
-!!Clap Internals
+!!!Deploying Clap commands
+@deploying
+
+A single Pharo image can host several Clap commands; in fact the base image includes commands for automating development tasks like loading code or running tests.
+Loading additional commands into an image is as simple as loading the corresponding packages; Clap discovers declared commands automatically.
+
+However, either when loading commands in an image, installing them on your own system, or packaging them for other users to install, you will have to consider a few gotchas:
+- Commands installed in a common image must all have distinct names.
+- The wrapper script for a command must know which image to run and with which VM; if one or the other are known by relative path, then the working directory matters.
+- Commands can modify their host image, inducing side-effects between successive runs or between commands hosted in a common image.
+We do not have generic answers to those questions but we are interested in your feedback.
