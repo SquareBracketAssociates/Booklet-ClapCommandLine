@@ -27,6 +27,9 @@ after_success:
   - mv _result/pdf/index.pdf Clap-wip.pdf
   - curl --silent --location https://github.com/probonopd/uploadtool/raw/master/upload.sh | bash -s Clap-wip.pdf
 
+after_failure:
+  - cat _result/pdf/index.log
+
 branches:
   except:
     - /^(?i:continuous)$/
