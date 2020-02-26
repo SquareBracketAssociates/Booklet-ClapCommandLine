@@ -475,7 +475,7 @@ flag help et command help
 
 !!!! flag help
 
-Passing ==--help== to a command that supports it shows the help text describing the command and its parameters:
+Passing ==\-\-help== to a command that supports it shows the help text describing the command and its parameters:
 [[[
 > clap hello --help
 Provides greetings
@@ -508,39 +508,23 @@ Options:
                 Keep image running
 ]]]
 
-Pay attention the flag should be explicitly check in the command meaning
-Because \-\-help takes precedence over the other arguments.
-
+Pay attention: usually, ==\-\-help== takes precedence over other arguments.
+However, in Clap, flags do not automatically trigger behavior.
+This makes it necessary to check for it as one of the first things the command does.
 [[[
 hello
-	"The usual Hello-World example, demonstrating a Clap command with a couple options."
+  "The usual Hello-World example, demonstrating a Clap command with a couple options."
 
-	<commandline>
-	^ (ClapCommand withName: 'hello')
-		description: 'Provides greetings';
-		add: ClapFlag forHelp;
-		add: ((ClapFlag withName: 'whisper') description: 'Greet discretely');
-		add: ((ClapFlag withName: 'shout') description: 'Greet loudly');
-		add:
-			((ClapFlag withName: 'language')
-				description: 'Select language of greeting';
-				add: ((ClapPositional withName: 'langCode')
-					meaning: [ :pos | pos word asSymbol ];
-					implicitMeaning: [ #en ]);
-				meaning: [ :flag | (flag atName: 'langCode') value ]);
-		add:
-			((ClapPositional withName: 'who')
-				description: 'Recipient of the greetings';
-				multiple: true;
-				implicitMeaning: [ 'world' ]);
-		meaning: [ :args |
-			args
-				atName: 'help'
-				ifFound: [ :help |
-					help
-						value;
-						exitSuccess ].
-			(self with: args) sayHello ]
+  <commandline>
+  ^ (ClapCommand withName: 'hello')
+    description: 'Provides greetings';
+    add: ClapFlag forHelp;
+    " other parameters... "
+    meaning: [ :args |
+      args
+        at: #helpFlag
+        ifFound: [ :help | help value; exitSuccess ].
+      (self with: args) sayHello ]
 ]]]
 
 
@@ -590,11 +574,8 @@ flag: you have to manage it explicitly
 
 [[[
 args
-	atName: 'help'
-	ifFound: [ :help |
-		help
-			value;
-			exitSuccess ].
+  atName: 'help'
+  ifFound: [ :help | help value; exitSuccess ].
 ]]]
 
 command:
