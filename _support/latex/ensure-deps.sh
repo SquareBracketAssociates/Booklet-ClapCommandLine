@@ -5,6 +5,7 @@ xargs tlmgr install <<DEPS
     environ
     filehook
     fira
+    fontaxes
     fontspec
     footmisc
     gentium-tug
