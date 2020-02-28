@@ -2,14 +2,7 @@
 
 \usepackage{_support/latex/sbabook/pharo-titlepage}
 
-% Non-english books should change the main language below; refer to `texdoc polyglossia`
-% for supported languages and options.
-% \setmainlanguage{french}
-% If needed, give a proper translation in your language for the title of the list of
-% figures, tables, and listings which appears after the table of contents.
-% \addto\captionsfrench{\renewcommand*\listfigurename{Illustrations}}
-%                ^^^^^^ (language identifier)         ^^^^^^^^^^^^^ (translated title)
-
+\usepackage{polyglossia}
 \usepackage[normalem]{ulem} % for strikeout text (\sout{...})
 \usepackage{graphicx}
 
@@ -64,4 +57,8 @@
 
 \newenvironment{todo}{%
   \begin{leftbar}\textsf{\textbf{To do}}\quad
+}{\end{leftbar}}
+
+\newenvironment{important}{%
+  \begin{leftbar}\textsf{\textbf{Important}}\quad
 }{\end{leftbar}}
