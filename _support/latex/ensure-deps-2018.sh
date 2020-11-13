@@ -25,7 +25,9 @@ xargs tlmgr install <<DEPS
     tcolorbox
     tools
     trimspaces
+    slantsc
     ulem
     varwidth
     xcolor
+    xtab
 DEPS
