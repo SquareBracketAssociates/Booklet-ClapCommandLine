@@ -13,5 +13,5 @@ open: ${PDF}
 	open ${PDF}
 
 watch:
-	watchexec --watch index.pillar \
+	watchexec --watch index.md \
 		"make && displayline -background -revert 0 ${PDF}"
