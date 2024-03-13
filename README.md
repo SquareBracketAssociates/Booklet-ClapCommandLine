@@ -4,3 +4,4 @@
 [![Centralized book generation](https://github.com/SquareBracketAssociates/Booklet-ClapCommandLine/actions/workflows/main.yml/badge.svg)](https://github.com/SquareBracketAssociates/Booklet-ClapCommandLine/actions/workflows/main.yml)
 
 This booklet explains how to develop Pharo command line programs with [Clap](https://github.com/cdlm/clap-st)
+ 
